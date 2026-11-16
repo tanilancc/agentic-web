@@ -1,6 +1,6 @@
 # Beacon, Town Concierge and Quorum: design
 
-Status: draft for approval. Date: 2026-11-16.
+Status: approved by the owner on 2026-11-16.
 
 Three entries for the Open Agentic Web Challenge, built in this repository on the
 reference browser runtime. This document is the design for all three and the parts they
@@ -191,12 +191,13 @@ partner-network request, which the visitor only sees 140 characters of.
   mock router, so no key is needed.
 - A live check with a real key is done by the owner, never with a key pasted into chat.
 
-### 5.5 Hosting (my call, needs the owner's confirmation)
+### 5.5 Hosting
 
-Each site is deployed as its own static site on a host that gives one HTTPS origin per
-site and lets us set headers. Ten or so small sites are needed in total. Locally,
-`serve_town.mjs` gives each site its own port and host name. Deploying is public and
-needs the owner's account, so nothing is deployed without asking.
+Decided by the owner: **Cloudflare**. Each site is its own Cloudflare Pages project, so
+each gets its own HTTPS origin, and headers come from a `_headers` file at the site
+root. Ten or so small sites are needed in total. Locally, `serve_town.mjs` gives each
+site its own port and host name. Deploying is public and uses the owner's Cloudflare
+account, so nothing is deployed without asking.
 
 ## 6. Beacon
 
@@ -468,15 +469,15 @@ Concierge's booking flow are the core.
 
 - Build all three concepts.
 - The author picks how they are built.
+- Host on Cloudflare.
+- The hackathon allows any number of entries, so each product is its own entry.
+- This design was approved on 2026-11-16.
 
-## 12. Open questions for the owner
+## 12. Still open
 
-1. **Hosting.** Separate origins are needed. Which host and account should be used, and
-   who presses deploy?
-2. **Submission.** The hackathon page could not be read from the build environment. Is
-   this one submission or three, what is the deadline, and what are the judging
-   criteria? The answers may change the cut lines in section 10.
-3. **Names.** Beacon, Town Concierge and Quorum are working names.
+1. **Deadline and judging criteria.** The hackathon page could not be read from the
+   build environment. They may change the cut lines in section 10.
+2. **Names.** Beacon, Town Concierge and Quorum are working names.
 
 ## 13. Left to the builder
 
