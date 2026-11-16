@@ -8,7 +8,10 @@
  * :return: The FileRead.
  */
 export function goodRead(url, text = "{}") {
-  return { url, ok: true, status: 200, corsReadable: true, redirectedTo: "", text, error: "" };
+  return {
+    url, ok: true, status: 200, corsReadable: true, redirectedTo: "", text, error: "",
+    framing: { xFrameOptions: "", contentSecurityPolicy: "" },
+  };
 }
 
 /**

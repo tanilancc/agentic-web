@@ -6,6 +6,8 @@
 //   corsReadable  a browser on another origin may read the response
 //   redirectedTo  the final URL when it differs from url, else ""
 //   error         a short reason when something went wrong, else ""
+//   framing       {xFrameOptions, contentSecurityPolicy}: the two headers that decide
+//                 whether the file may be shown in a frame. Only Node can read them.
 
 /**
  * The reason given for a file over the size limit. Fixed copy, whatever the limit.
@@ -19,7 +21,10 @@ export const TOO_LARGE = "larger than 1 MB";
  * :return: A FileRead with nothing read.
  */
 function emptyRead(url) {
-  return { url, ok: false, status: 0, corsReadable: false, redirectedTo: "", text: "", error: "" };
+  return {
+    url, ok: false, status: 0, corsReadable: false, redirectedTo: "", text: "", error: "",
+    framing: { xFrameOptions: "", contentSecurityPolicy: "" },
+  };
 }
 
 /**
@@ -128,6 +133,10 @@ export class NodeReader {
       read.redirectedTo = current === url ? "" : current;
       const allowed = response.headers.get("access-control-allow-origin");
       read.corsReadable = allowed === "*" || allowed === this.callerOrigin;
+      read.framing = {
+        xFrameOptions: response.headers.get("x-frame-options") || "",
+        contentSecurityPolicy: response.headers.get("content-security-policy") || "",
+      };
       if (!response.ok) {
         read.error = `HTTP ${response.status}`;
         return read;
