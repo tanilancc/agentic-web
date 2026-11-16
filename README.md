@@ -221,6 +221,11 @@ writes the `bridge/` page that other agent sites load before they run your netwo
 Their READMEs show how to serve both on two host names.
 
 
+## Projects
+
+- [Beacon](apps/beacon/README.md): checks any agentic website against the spec, red-teams
+  its agents, and lists agent sites in a directory where they can be tried.
+
 ## Infrastructure
 
 Build tools and infrastructure for the agentic web: what will simplify the creation, deployment,

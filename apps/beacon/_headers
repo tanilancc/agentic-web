@@ -1,0 +1,35 @@
+# Cloudflare Pages (and Netlify) headers for Beacon. Public agent files are readable from
+# any site; the runtime's sandbox worker gets a locked-down policy. The bridge folder is
+# left framable on purpose: other agent sites load bridge/action-bridge.html in a frame.
+/agent-manifest.json
+  Access-Control-Allow-Origin: *
+/beacon.network.json
+  Access-Control-Allow-Origin: *
+/links.json
+  Access-Control-Allow-Origin: *
+/agent-mcp.json
+  Access-Control-Allow-Origin: *
+/.well-known/nsdeploy.json
+  Access-Control-Allow-Origin: *
+/.well-known/nsdeploy-agent.json
+  Access-Control-Allow-Origin: *
+/canary/agent-manifest.json
+  Access-Control-Allow-Origin: *
+/canary/beacon_canary.network.json
+  Access-Control-Allow-Origin: *
+/canary/links.json
+  Access-Control-Allow-Origin: *
+/auditor/agent-manifest.json
+  Access-Control-Allow-Origin: *
+/auditor/beacon_auditor.network.json
+  Access-Control-Allow-Origin: *
+/auditor/links.json
+  Access-Control-Allow-Origin: *
+/index/sites.json
+  Access-Control-Allow-Origin: *
+/index/status.json
+  Access-Control-Allow-Origin: *
+/badges/*
+  Access-Control-Allow-Origin: *
+/runtime/sandbox-worker.js
+  Content-Security-Policy: default-src 'none'; script-src blob:; connect-src 'none'; worker-src 'none'
