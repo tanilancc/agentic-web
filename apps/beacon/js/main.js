@@ -2,6 +2,7 @@
 
 import { BeaconApp } from "./app.js";
 import { DirectoryView } from "./directory-view.js";
+import { browserRedTeam, refreshSetup } from "./redteam/browser.js";
 
 /**
  * Read a JSON file from this site.
@@ -21,6 +22,13 @@ async function readJson(path, fallback) {
 
 const app = new BeaconApp();
 window.beacon = app;
+
+// The red-team tab of each report. Its key setup is read again each time a report is shown.
+const redTeam = await browserRedTeam();
+app.view.onRedTeamPanel(async (panel, report) => {
+  await refreshSetup(redTeam);
+  redTeam.attach(panel, report);
+});
 
 const directory = new DirectoryView(document.getElementById("directory"));
 // Picking a listed site is the visitor asking for that site by name.

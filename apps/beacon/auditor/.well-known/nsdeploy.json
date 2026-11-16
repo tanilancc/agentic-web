@@ -1,0 +1,17 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "beacon_auditor",
+      "front_man": "auditor",
+      "aliases": [
+        "beacon_auditor"
+      ],
+      "url": "beacon_auditor"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}
