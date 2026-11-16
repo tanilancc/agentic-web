@@ -35,14 +35,29 @@
     <section id="report" class="report" aria-live="polite" aria-label="Inspection report"></section>
     <aside class="sidebar">
       <section id="directory" class="directory" aria-label="Directory of agent sites"></section>
-      <section id="assistant" class="assistant" aria-label="Ask Beacon"></section>
     </aside>
   </main>
 
+  <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+    <h2 id="assistant-heading">Ask Beacon</h2>
+    <p>Ask for an agent site by what it does, or ask what a site failed and how to fix it. Answers come only from the directory and from Beacon's checks.</p>
+    <p class="assistant-note">Your messages and the reports on this page go to the LLM provider you choose in the settings below. You are asked before Beacon contacts a site the assistant names.</p>
+    <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load. You can still use the page directly.</p>
+    <div id="agent-app">
+      <div data-ns-slot="header"></div>
+      <div class="assistant-panels">
+        <div data-ns-slot="chat"></div>
+        <div data-ns-slot="agents"></div>
+      </div>
+      <div data-ns-slot="settings"></div>
+    </div>
+  </section>
+
   <footer class="colophon">
-    <p>Beacon runs entirely in your browser. It has no server, and it never sees your model key.</p>
+    <p>Beacon runs entirely in your browser and has no server. Your model key stays in this browser and is sent only to the provider you choose.</p>
   </footer>
 
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="site.js"></script>
 </body>
 </html>

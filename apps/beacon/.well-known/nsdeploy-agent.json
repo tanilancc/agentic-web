@@ -1,0 +1,7 @@
+{
+  "protocol": "nsdeploy-agent-mcp/v1",
+  "network": "beacon",
+  "front_man": "beacon_guide",
+  "available": false,
+  "reason": "This is a static bundle; a public MCP facade requires an application host."
+}
