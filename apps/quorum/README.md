@@ -1,5 +1,7 @@
 # Quorum
 
+Live at https://oaw-quorum.pages.dev. Its network has two agents: `procurement_lead` and `plan_auditor`, which checks composed plans with the checker and never approves what it rejects.
+
 Give it a headcount, dietary needs, a budget and a time. Quorum gets binding quotes from
 several food vendors, finds the best plan within those rules, and places the orders the
 visitor approves, each confirmed in the vendor's own window.

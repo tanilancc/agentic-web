@@ -1,5 +1,7 @@
 # Town Concierge
 
+Live at https://oaw-concierge.pages.dev. Its network has two agents, `concierge` and `itinerary_checker`, and links to the guesthouse's and harbor tours' own assistants for questions their data does not answer, after a consent card.
+
 Plan a short trip to Marrow Point across its independent businesses, with live
 availability and prices from each, and book every part on the site that runs it.
 

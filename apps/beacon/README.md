@@ -1,5 +1,7 @@
 # Beacon
 
+Live at https://oaw-beacon.pages.dev. Its network has two agents: `beacon_guide` and `report_explainer`, which explains a report and what to fix first.
+
 Beacon checks any open agentic website against the
 [Worldwide Agentic Web MVP spec](../../docs/worldwide_agentic_web_mvp_spec.md), red-teams
 its published agents, and lists agent sites in a directory where they can be tried.
