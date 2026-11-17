@@ -1,0 +1,11 @@
+{
+  "networks": [
+    {
+      "name": "harbour_bakehouse_partner_desk"
+    }
+  ],
+  "actions": {
+    "version": 1,
+    "module": "../partner-actions.js"
+  }
+}

@@ -29,6 +29,39 @@
       "shared": [
         "partner-desk.js"
       ]
+    },
+    {
+      "id": "little_oven",
+      "dir": "apps/market/little_oven",
+      "port": 8095,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js"
+      ]
+    },
+    {
+      "id": "green_fork",
+      "dir": "apps/market/green_fork",
+      "port": 8096,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js"
+      ]
+    },
+    {
+      "id": "harbour_bakehouse",
+      "dir": "apps/market/harbour_bakehouse",
+      "port": 8097,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js"
+      ]
     }
   ]
 }
