@@ -25,7 +25,7 @@
     "byok_router": "https://api.otari.ai/api/v1"
   },
   "allowed_peers": [
-    "http://localhost:8081"
+    "https://oaw-harbor-tours.pages.dev"
   ],
   "peer_policy": {
     "mode": "closed",

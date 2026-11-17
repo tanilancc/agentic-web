@@ -25,7 +25,7 @@
     "byok_router": "https://api.otari.ai/api/v1"
   },
   "allowed_peers": [
-    "http://127.0.0.1:8080"
+    "https://oaw-tidewhistle.pages.dev"
   ],
   "peer_policy": {
     "mode": "closed",

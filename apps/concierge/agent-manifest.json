@@ -24,7 +24,10 @@
     "mock": false,
     "byok_router": "https://api.otari.ai/api/v1"
   },
-  "allowed_peers": [],
+  "allowed_peers": [
+    "https://oaw-tidewhistle.pages.dev",
+    "https://oaw-harbor-tours.pages.dev"
+  ],
   "peer_policy": {
     "mode": "closed",
     "deny_origins": [],

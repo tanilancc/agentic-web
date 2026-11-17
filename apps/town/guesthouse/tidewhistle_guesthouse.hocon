@@ -40,7 +40,7 @@
     # keyed by the exact URL in the calling agent's "tools". Delete this block if the
     # site calls no partner sites. See references/linking.md.
     "link_labels": {
-        "http://localhost:8081/marrow_point_harbor_tours": "Marrow Point Harbor Tours"
+        "https://oaw-harbor-tours.pages.dev/marrow_point_harbor_tours": "Marrow Point Harbor Tours"
     },
 
     "commondefs": {
@@ -128,7 +128,7 @@ How to work:
 """,
             # Partner sites only: each partner's exact network URL, as in link_labels.
             "tools": [
-                "http://localhost:8081/marrow_point_harbor_tours"
+                "https://oaw-harbor-tours.pages.dev/marrow_point_harbor_tours"
             ]
         }
     ]

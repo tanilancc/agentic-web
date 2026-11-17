@@ -1,4 +1,40 @@
 {
   "version": 1,
-  "sites": []
+  "sites": [
+    {
+      "url": "https://oaw-beacon.pages.dev/beacon",
+      "name": "Beacon",
+      "description": "A directory of open agent sites, and a checker that reports how any agent site does against the Worldwide Agentic Web spec.",
+      "tags": ["directory", "conformance", "tools"],
+      "submittedBy": "agentic-web"
+    },
+    {
+      "url": "https://oaw-concierge.pages.dev/marrow_point_concierge",
+      "name": "Town Concierge",
+      "description": "Plans a short trip to Marrow Point across its independent businesses, asks their own assistants, and books each leg on the business's own site.",
+      "tags": ["travel", "booking", "multi-site"],
+      "submittedBy": "agentic-web"
+    },
+    {
+      "url": "https://oaw-quorum.pages.dev/quorum_procurement",
+      "name": "Quorum",
+      "description": "Orders food for a group from several vendors: binding quotes, the best plan within your rules, and orders each vendor confirms.",
+      "tags": ["food", "procurement", "multi-site"],
+      "submittedBy": "agentic-web"
+    },
+    {
+      "url": "https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse",
+      "name": "Tidewhistle Guesthouse",
+      "description": "Rooms, prices and house policies at a Marrow Point guesthouse, with booking and cancelling.",
+      "tags": ["lodging", "booking", "travel"],
+      "submittedBy": "agentic-web"
+    },
+    {
+      "url": "https://oaw-harbor-tours.pages.dev/marrow_point_harbor_tours",
+      "name": "Marrow Point Harbor Tours",
+      "description": "Boat trips and a sea wall walk from Marrow Point harbor, with times, prices and reservations.",
+      "tags": ["tours", "booking", "travel"],
+      "submittedBy": "agentic-web"
+    }
+  ]
 }

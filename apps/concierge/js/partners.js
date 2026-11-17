@@ -4,6 +4,8 @@
 // To add a partner: it publishes partner-desk/ and lists this site's origin in its
 // partner-callers.js; then add an entry here with its quote and booking actions.
 
+import { pickOrigin } from "../shared/site-origin.js";
+
 /**
  * Add minutes to a local time "YYYY-MM-DDTHH:MM".
  *
@@ -17,16 +19,19 @@ export function addMinutes(at, minutes) {
   return time.toISOString().slice(0, 16);
 }
 
+const GUESTHOUSE = pickOrigin("http://127.0.0.1:8080", "https://oaw-tidewhistle.pages.dev");
+const HARBOR_TOURS = pickOrigin("http://localhost:8081", "https://oaw-harbor-tours.pages.dev");
+
 /**
- * The partners, with the local addresses used in development. Change the origins to the
- * deployed https addresses when the town is hosted.
+ * The partners. Each publishes its partner desk at its own address.
  */
 export const PARTNERS = [
   {
     id: "guesthouse",
     label: "Tidewhistle Guesthouse",
-    origin: "http://127.0.0.1:8080",
-    bridgeUrl: "http://127.0.0.1:8080/partner-desk/action-bridge.html",
+    origin: GUESTHOUSE,
+    bridgeUrl: `${GUESTHOUSE}/partner-desk/action-bridge.html`,
+    page: `${GUESTHOUSE}/`,
     offers: "Rooms for overnight stays.",
     quoteAction: "quote_stay",
     commitAction: "place_booking",
@@ -49,8 +54,9 @@ export const PARTNERS = [
   {
     id: "harbor_tours",
     label: "Marrow Point Harbor Tours",
-    origin: "http://localhost:8081",
-    bridgeUrl: "http://localhost:8081/partner-desk/action-bridge.html",
+    origin: HARBOR_TOURS,
+    bridgeUrl: `${HARBOR_TOURS}/partner-desk/action-bridge.html`,
+    page: `${HARBOR_TOURS}/`,
     offers: "Boat trips and walks around the harbor.",
     quoteAction: "quote_trip",
     commitAction: "reserve_trip",

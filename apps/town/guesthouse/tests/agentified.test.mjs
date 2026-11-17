@@ -1254,7 +1254,7 @@ class AgentifiedSiteTest {
     const answer = AssistantMount.consent({
       kind: "network",
       peerLabel: "Marrow Point Harbor Tours",
-      peerOrigin: "localhost:8081",
+      peerOrigin: "oaw-harbor-tours.pages.dev",
       requestText: "What boat trips do you offer?",
     });
     assert.equal(newest.card.getAttribute("role"), "group");
@@ -1286,7 +1286,7 @@ class AgentifiedSiteTest {
       const answer = AssistantMount.consent({
         kind: "network",
         peerLabel: "Marrow Point Harbor Tours",
-        peerOrigin: "localhost:8081",
+        peerOrigin: "oaw-harbor-tours.pages.dev",
         requestText: "What boat trips do you offer?",
       });
       assert.equal(newest.card.getAttribute("role"), "group");

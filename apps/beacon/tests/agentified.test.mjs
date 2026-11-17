@@ -199,3 +199,27 @@ test("run on another site, the network has no website tools", async () => {
   await runAgent(ctx, ctx.frontMan, "What do you offer?", null, []);
   assert.ok(!model.toolNames(0).some((name) => name.startsWith("website_")));
 });
+
+test("the network has two agents, and the front agent hands report questions to the explainer", async () => {
+  const { network, manifest } = await load();
+  assert.deepEqual(network.config.tools.map((a) => a.name), ["beacon_guide", "report_explainer"]);
+  assert.deepEqual(network.getAgentSpec("beacon_guide").tools, ["report_explainer"]);
+  assert.match(network.getAgentSpec("report_explainer").instructions, /website_get_site_report/);
+  const state = usePage();
+  state.reports.set("https://site.example/net", report("https://site.example/net"));
+  const model = new ScriptedModel([
+    { tool: "report_explainer", arguments: { request: "Explain the failed checks for https://site.example/net" } },
+    { tool: "website_get_site_report", arguments: { url: "https://site.example/net" } },
+    { text: "The bridge does not load; remove the header." },
+    { text: "Your site's bridge page does not load in a frame. Remove the header." },
+  ]);
+  const ctx = {
+    network, manifest, actions: await registry(), baseOrigin: BASE, displayOrigin: new URL(BASE).host,
+    trace: new TraceBus(), isTop: true, frontMan: network.findFrontMan(), history: [], llm: model,
+    confirmWebsiteActions: async () => true,
+  };
+  const result = await runAgent(ctx, ctx.frontMan, "What should my site fix?", null, []);
+  assert.match(result.text, /bridge/);
+  assert.match(model.calls[1].messages[0].content, /report explainer/i);
+  assert.equal(model.toolResults(2)[0].status, "succeeded");
+});

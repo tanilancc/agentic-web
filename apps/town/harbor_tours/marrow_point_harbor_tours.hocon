@@ -41,7 +41,7 @@
     # The 127.0.0.1 URL works only on this machine. Before hosting, put the guesthouse's
     # https network URL here and in "tools", and its origin in allowed_peers.
     "link_labels": {
-        "http://127.0.0.1:8080/tidewhistle_guesthouse": "Tidewhistle Guesthouse"
+        "https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse": "Tidewhistle Guesthouse"
     },
 
     "commondefs": {
@@ -127,7 +127,7 @@ How to work:
 {peer_rules}
 """,
             # The partner's exact network URL, as in link_labels.
-            "tools": ["http://127.0.0.1:8080/tidewhistle_guesthouse"]
+            "tools": ["https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse"]
         }
     ]
 }

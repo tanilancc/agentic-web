@@ -74,3 +74,37 @@ test("a scripted visit plans a stay and a trip and books both, and the model nev
     assert.ok(!sent.includes(secret), secret);
   }
 });
+
+test("the network has two agents and links to both businesses' own assistants at their live addresses", async () => {
+  const { network, manifest } = await load();
+  assert.deepEqual(network.config.tools.map((a) => a.name), ["concierge", "itinerary_checker"]);
+  const front = network.getAgentSpec("concierge");
+  assert.deepEqual(front.tools, ["itinerary_checker", "https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse", "https://oaw-harbor-tours.pages.dev/marrow_point_harbor_tours"]);
+  assert.match(front.instructions, /Partner tools ask another site's assistant/);
+  assert.deepEqual(Object.keys(network.config.link_labels).sort(), front.tools.slice(1).sort());
+  assert.ok(manifest.allowed_peers.includes("https://oaw-tidewhistle.pages.dev"));
+  assert.ok(manifest.allowed_peers.includes("https://oaw-harbor-tours.pages.dev"));
+  assert.match(network.getAgentSpec("itinerary_checker").instructions, /website_get_itinerary/);
+});
+
+test("the front agent hands the itinerary check to the checker, which reads the plan", async () => {
+  const { network, manifest } = await load();
+  const plan = new Itinerary();
+  ConciergeActions.context = { desk: {}, plan, card: () => ({}), save: () => {}, now: () => "2026-12-01T09:00" };
+  const registry = new ActionRegistry();
+  registerActions({ register: (d) => registry.register({ base: "http://localhost:8093", network: "marrow_point_concierge" }, d) });
+  const model = new ScriptedModel([
+    { tool: "itinerary_checker", arguments: { request: "Check the plan." } },
+    { tool: "website_get_itinerary", arguments: {} },
+    { text: "Nothing planned yet." },
+    { text: "Your plan is empty so far." },
+  ]);
+  const ctx = {
+    network, manifest, actions: registry, baseOrigin: "http://localhost:8093", displayOrigin: "localhost:8093",
+    trace: new TraceBus(), isTop: true, frontMan: network.findFrontMan(), history: [], llm: model,
+    confirmWebsiteActions: async () => true,
+  };
+  const result = await runAgent(ctx, ctx.frontMan, "Does my plan work?", null, []);
+  assert.match(result.text, /empty/);
+  assert.match(model.calls[1].messages[0].content, /itinerary checker/i);
+});

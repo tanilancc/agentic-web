@@ -120,13 +120,14 @@ export class ConciergeActions {
     for (const partner of PARTNERS) {
       const catalog = await desk.catalog(partner.id);
       if (!Array.isArray(catalog)) {
-        partners.push({ id: partner.id, label: partner.label, offers: partner.offers, unavailable: catalog.reason });
+        partners.push({ id: partner.id, label: partner.label, page: partner.page, offers: partner.offers, unavailable: catalog.reason });
         continue;
       }
       const commit = catalog.find((entry) => entry.name === partner.commitAction);
       partners.push({
         id: partner.id,
         label: partner.label,
+        page: partner.page,
         offers: partner.offers,
         reads: catalog.filter((entry) => entry.effect === "read").map((entry) => ({ action: entry.name, description: entry.description, input: entry.inputSchema })),
         bookingNeeds: partner.extraFields.map((field) => ({ field, options: commit?.inputSchema?.properties?.[field]?.enum || [] })),

@@ -28,7 +28,8 @@
       "openAs": "localhost",
       "shared": [
         "partner-desk.js",
-        "contact-card.js"
+        "contact-card.js",
+        "site-origin.js"
       ]
     },
     {
@@ -72,7 +73,8 @@
       "shared": [
         "partner-desk.js",
         "contact-card.js",
-        "vendor-pricing.js"
+        "vendor-pricing.js",
+        "site-origin.js"
       ]
     }
   ]

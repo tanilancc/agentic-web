@@ -17,7 +17,7 @@ for (const id of VENDORS) {
     registerActions({ register: (d) => registry.register({ base: `http://127.0.0.1/${id}/partner-desk`, network: `${id}_partner_desk` }, d) });
     const entries = [...registry.entries.values()];
     assert.deepEqual(entries.map((e) => e.name), ["get_catalog", "request_quote", "place_order"]);
-    assert.ok(entries.every((e) => e.callerOrigins.length === 1 && e.callerOrigins[0] === "http://localhost:8094"));
+    assert.ok(entries.every((e) => JSON.stringify(e.callerOrigins) === JSON.stringify(["http://localhost:8094", "https://oaw-quorum.pages.dev"])));
     const page = await readFile(new URL(`../../apps/market/${id}/partner-desk/action-bridge.html`, import.meta.url), "utf8");
     assert.match(page, /src="\.\.\/runtime\/action-bridge\.js"/);
     const html = await readFile(new URL(`../../apps/market/${id}/index.html`, import.meta.url), "utf8");

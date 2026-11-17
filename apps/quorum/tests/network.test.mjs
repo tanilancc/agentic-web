@@ -71,3 +71,35 @@ test("a scripted visit sets the mandate, finds the best plan, places it, and the
     assert.ok(!sent.includes(secret), secret);
   }
 });
+
+test("the network has two agents, and the plan auditor checks plans with the checker", async () => {
+  const { network, manifest } = await load();
+  assert.deepEqual(network.config.tools.map((a) => a.name), ["procurement_lead", "plan_auditor"]);
+  assert.deepEqual(network.getAgentSpec("procurement_lead").tools, ["plan_auditor"]);
+  const auditor = network.getAgentSpec("plan_auditor").instructions;
+  assert.match(auditor, /website_check_plan/);
+  assert.match(auditor, /never call a plan acceptable that the checker rejects/i);
+  const state = { mandate: { date: "2026-12-10", headcount: 12, vegetarian: 6, vegan: 0, glutenFree: 6, budgetCents: 100000, from: "17:00", to: "18:00", flexMinutes: 30, pickupAllowed: false }, search: null, award: new Award() };
+  QuorumActions.context = {
+    desk: { read: async (id, action, args) => (action === "get_catalog" ? CATALOGS[id] : quote(CATALOGS[id], args, "2026-12-01T09:00")) },
+    getMandate: () => state.mandate, setMandate: (m) => { state.mandate = m; }, getSearch: () => state.search, setSearch: (s) => { state.search = s; },
+    award: () => state.award, card: () => ({}), save: () => {},
+  };
+  const registry = new ActionRegistry();
+  registerActions({ register: (d) => registry.register({ base: "http://localhost:8094", network: "quorum_procurement" }, d) });
+  const ordersJson = JSON.stringify([{ vendor: "harbour_bakehouse", time: "17:00", fulfilment: "delivery", items: [{ id: "gf-platter", qty: 1 }, { id: "classic-platter", qty: 1 }] }]);
+  const model = new ScriptedModel([
+    { tool: "plan_auditor", arguments: { request: `Check this plan: ${ordersJson}` } },
+    { tool: "website_check_plan", arguments: { ordersJson } },
+    { text: "It fails: some people would have nothing suitable." },
+    { text: "That plan does not feed everyone." },
+  ]);
+  const ctx = {
+    network, manifest, actions: registry, baseOrigin: "http://localhost:8094", displayOrigin: "localhost:8094",
+    trace: new TraceBus(), isTop: true, frontMan: network.findFrontMan(), history: [], llm: model,
+    confirmWebsiteActions: async () => true,
+  };
+  await runAgent(ctx, ctx.frontMan, "Is the two-platter plan fine?", null, []);
+  assert.match(model.calls[1].messages[0].content, /plan auditor/i);
+  assert.equal(model.toolResults(2)[0].result.ok, false);
+});

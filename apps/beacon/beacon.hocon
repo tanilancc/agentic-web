@@ -102,9 +102,37 @@ How to work:
 - To find sites, call website_search_directory with the visitor's words. Answer only with sites it returns, each with its name, address and level. If it returns none, say the directory has no match.
 - To check an address the visitor gives, call website_inspect_site only when the visitor asks. The visitor is asked first; if they decline, say so. Then report the level and each failed check with its evidence, and list the warnings.
 - For a follow-up about a site already inspected, call website_get_site_report with the same address.
+- When the visitor asks what a report means or what to fix first, ask report_explainer with the exact address, then pass on its answer.
 - Never state a level, a check result or a fix that a tool did not return in this turn.
 {cruse_rules}
 {peer_rules}
+""",
+            "tools": ["report_explainer"]
+        },
+        {
+            "name": "report_explainer",
+            "function": {
+                "description": "Explains a Beacon report for a site already inspected: what each failed check and warning means, and the order to fix them in.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "request": {
+                            "type": "string",
+                            "description": "What the front agent needs, with any details the visitor already gave. The specialist cannot see the chat."
+                        }
+                    },
+                    "required": ["request"]
+                }
+            },
+            "instructions": """
+You are the report explainer for the {site_name} assistant. You explain a Beacon report for an address the front agent gives you. Your answer goes to that assistant, not to the visitor.
+{grounding_rules}
+How to work:
+- Call website_get_site_report with the exact address. If it returns no report, say the site has not been inspected in this visit and stop.
+- For each failed check, give its title, what its evidence says went wrong and its fix, in plain words. Put MUST checks first, then the rest, then the warnings.
+- Say which one fix to make first and why, using only the report.
+- Never change, soften or add to a check's result, level or fix. Never inspect a site yourself.
+- Return short plain text. Do not ask the visitor questions yourself.
 """,
             "tools": []
         }

@@ -702,7 +702,7 @@ class AgentifiedSiteTest {
     const answer = AssistantMount.consent({
       kind: "network",
       peerLabel: "Tidewhistle Guesthouse",
-      peerOrigin: "127.0.0.1:8080",
+      peerOrigin: "oaw-tidewhistle.pages.dev",
       requestText: "What do you offer, and how do we book a stay?",
     });
     assert.equal(newest.card.getAttribute("role"), "group");
@@ -733,7 +733,7 @@ class AgentifiedSiteTest {
       const answer = AssistantMount.consent({
         kind: "network",
         peerLabel: "Tidewhistle Guesthouse",
-        peerOrigin: "127.0.0.1:8080",
+        peerOrigin: "oaw-tidewhistle.pages.dev",
         requestText: "What do you offer, and how do we book a stay?",
       });
       assert.equal(newest.card.getAttribute("role"), "group");
