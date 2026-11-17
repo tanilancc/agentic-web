@@ -63,6 +63,17 @@
         "vendor-desk.js",
         "vendor-page.js"
       ]
+    },
+    {
+      "id": "quorum",
+      "dir": "apps/quorum",
+      "port": 8094,
+      "openAs": "localhost",
+      "shared": [
+        "partner-desk.js",
+        "contact-card.js",
+        "vendor-pricing.js"
+      ]
     }
   ]
 }

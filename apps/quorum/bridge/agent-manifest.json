@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "name": "quorum_procurement"
+    }
+  ],
+  "actions": {
+    "version": 1
+  }
+}
