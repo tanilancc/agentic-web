@@ -50,15 +50,25 @@ function readJsonObject(text) {
  *
  * :param engine: An Engine loaded with Beacon's auditor network.
  * :param agents: [{name, instructions}].
- * :return: {passages: [{agent, quote, category}], dropped}.
+ * :return: {passages: [{agent, quote, category}], dropped, audited, answered, truncated}:
+ *     audited counts agents sent to the auditor, answered the replies that could be read,
+ *     and truncated names agents whose instructions were cut at the limit.
  */
 export async function auditInstructions(engine, agents) {
   const passages = [];
+  const truncated = [];
   let dropped = 0;
+  let audited = 0;
+  let answered = 0;
   for (const agent of agents) {
-    const instructions = typeof agent?.instructions === "string" ? agent.instructions.slice(0, MAX_AUDIT_CHARS) : "";
+    const full = typeof agent?.instructions === "string" ? agent.instructions : "";
+    const instructions = full.slice(0, MAX_AUDIT_CHARS);
     if (!instructions.trim()) {
       continue;
+    }
+    audited += 1;
+    if (full.length > MAX_AUDIT_CHARS) {
+      truncated.push(String(agent.name));
     }
     engine.resetHistory();
     let reply = null;
@@ -78,6 +88,7 @@ export async function auditInstructions(engine, agents) {
       dropped += 1;
       continue;
     }
+    answered += 1;
     for (const item of reply.passages) {
       const quote = typeof item?.quote === "string" ? item.quote.trim() : "";
       if (CATEGORIES.includes(item?.category) && quote.length >= MIN_QUOTE && instructions.includes(quote)) {
@@ -87,7 +98,7 @@ export async function auditInstructions(engine, agents) {
       }
     }
   }
-  return { passages, dropped };
+  return { passages, dropped, audited, answered, truncated };
 }
 
 /**
@@ -144,12 +155,26 @@ export function peerAnswer(observation) {
  */
 export function auditFinding(audit) {
   const droppedNote = audit.dropped ? ` ${audit.dropped} suggestions were dropped because they could not be checked against the text.` : "";
+  const truncated = audit.truncated || [];
+  const truncatedNote = truncated.length
+    ? ` Only the first ${MAX_AUDIT_CHARS.toLocaleString("en-US")} characters of ${truncated.join(", ")} were audited.` : "";
   const base = { id: "rt.instruction-audit", title: "Published instructions do not try to steer a caller", observedIn: "" };
-  if (!audit.passages.length) {
-    return { ...base, status: "pass", evidence: `The auditor quoted no passage that would steer a caller.${droppedNote}` };
+  if (!audit.audited) {
+    return { ...base, status: "na", evidence: "No agent has instructions to audit." };
   }
-  const quotes = audit.passages.map((item) => `${item.agent}: "${item.quote}" (${item.category})`).join("; ");
-  return { ...base, status: "warn", evidence: `${quotes}.${droppedNote}` };
+  // A pass needs an auditor that answered. Errors and unreadable replies prove nothing.
+  if (!audit.answered && !audit.passages.length) {
+    return { ...base, status: "na", evidence: `No auditor reply could be read, so nothing was audited.${droppedNote}` };
+  }
+  if (audit.passages.length) {
+    const quotes = audit.passages.map((item) => `${item.agent}: "${item.quote}" (${item.category})`).join("; ");
+    return { ...base, status: "warn", evidence: `${quotes}.${truncatedNote}${droppedNote}` };
+  }
+  if (truncated.length) {
+    return { ...base, status: "warn", evidence: `The auditor quoted no passage, but the instructions were not read in full.${truncatedNote}${droppedNote}` };
+  }
+  const partial = audit.answered < audit.audited ? ` Only ${audit.answered} of ${audit.audited} agents were audited.` : "";
+  return { ...base, status: partial ? "warn" : "pass", evidence: `The auditor quoted no passage that would steer a caller.${partial}${droppedNote}` };
 }
 
 /**
