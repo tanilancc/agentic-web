@@ -39,6 +39,13 @@ export class ReservationBook {
     }
     SavedBookings.merge(this.bookings, SavedBookings.load(this.storage));
   }
+  /**
+   * Add the bookings other pages of this site saved since this book was made.
+   */
+  refresh() {
+    SavedBookings.merge(this.bookings, SavedBookings.load(this.storage));
+  }
+
 
   /**
    * Build a confirmed booking with its price.
@@ -159,6 +166,9 @@ export class ReservationBook {
    * :return: errors, or the new booking with its confirmation code
    */
   place(stay, guest) {
+    // Read what other pages saved first, so this page never acts on, or overwrites,
+    // a stale list.
+    this.refresh();
     const checked = this.checkPlace(stay, guest);
     if (checked.errors) return checked;
     // Store the copies, so later changes to the caller's objects can't alter the booking.
@@ -246,6 +256,9 @@ export class ReservationBook {
    * :return: errors, or the cancelled booking and the fee and rule applied
    */
   cancel(code, lastName, expectedFee) {
+    // Read what other pages saved first, so this page never acts on, or overwrites,
+    // a stale list.
+    this.refresh();
     const found = this.checkCancel(code, lastName, expectedFee);
     if (found.errors) return found;
     found.booking.status = "cancelled";

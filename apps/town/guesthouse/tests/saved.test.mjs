@@ -56,3 +56,13 @@ test("a storage that throws still books in memory", () => {
 test("without a storage the book works as before", () => {
   assert.ok(new ReservationBook().place(stay(), guest).booking);
 });
+
+test("a page opened before a booking elsewhere cannot double-book or erase it", () => {
+  const storage = memoryStorage();
+  const stalePage = new ReservationBook(storage);
+  const popup = new ReservationBook(storage);
+  const first = popup.place(stay(), guest).booking;
+  const second = stalePage.place(stay(), guest);
+  assert.ok(second.errors, "the stale page must see the room is taken");
+  assert.ok(SavedBookings.load(storage).some((b) => b.code === first.code));
+});

@@ -102,7 +102,7 @@ test("the booking dialog lists every planned leg, the total and who it is for", 
   }
   app.contact.read();
   const details = app.reviewTrip();
-  assert.equal(details["Seal Rocks Cruise"], "Marrow Point Harbor Tours, 2030-01-01 10:00, $76.00");
+  assert.equal(details["Leg 1: Seal Rocks Cruise"], "Marrow Point Harbor Tours, 2030-01-01 10:00, $76.00");
   assert.equal(details.Total, "$76.00");
   assert.equal(details["Booked for"], "Ana Silva, ana@example.com, 0123");
 });
@@ -122,4 +122,22 @@ test("the page allows only its own scripts and mounts the assistant", async () =
   }
   assert.match(html, /id="agent-app"/);
   assert.match(html, /The assistant never sees it/);
+});
+
+test("the booking dialog keeps every leg apart, whatever the partners call them", () => {
+  const { doc, form, store } = page();
+  const app = new ConciergeApp({ doc, store, engine: () => null });
+  const legOf = (title, start) => ({ partner: "harbor_tours", kind: "trip", title, start, end: start, partySize: 2, totalCents: 7600, commit: { action: "reserve_trip", args: {} } });
+  app.plan.add(legOf("Seal Rocks Cruise", "2030-01-01T10:00"));
+  app.plan.add(legOf("Seal Rocks Cruise", "2030-01-02T10:00"));
+  app.plan.add(legOf("refusal", "2030-01-03T10:00"));
+  app.plan.add(legOf("Total", "2030-01-04T10:00"));
+  for (const [name, value] of [["firstName", "Ana"], ["lastName", "Silva"], ["email", "ana@example.com"], ["phone", "0123"]]) {
+    field(form, name).value = value;
+  }
+  app.contact.read();
+  const details = app.reviewTrip();
+  assert.equal(details.refusal, undefined);
+  assert.equal(Object.keys(details).filter((k) => k.startsWith("Leg ")).length, 4);
+  assert.equal(details.Total, "$304.00");
 });

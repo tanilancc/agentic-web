@@ -85,3 +85,23 @@ test("JSON of the wrong shape gives an empty plan", () => {
   assert.deepEqual(Itinerary.fromJSON({ items: "x" }).list(), []);
   assert.deepEqual(Itinerary.fromJSON({ items: [null, { kind: "boat" }] }).list(), []);
 });
+
+test("a leg left mid-booking by a closed page comes back as unknown, never as planned", () => {
+  const plan = new Itinerary();
+  const id = plan.add(trip());
+  plan.update(id, { status: "booking" });
+  const again = Itinerary.fromJSON(JSON.parse(JSON.stringify(plan)));
+  assert.equal(again.list()[0].status, "unknown");
+  assert.match(again.list()[0].reason, /may have been booked/);
+});
+
+test("clearing the plan keeps booked and uncertain legs", () => {
+  const plan = new Itinerary();
+  const a = plan.add(trip());
+  const b = plan.add(trip({ title: "Harbor Loop" }));
+  plan.add(trip({ title: "Sea Wall Walk" }));
+  plan.update(a, { status: "booked", code: "HT-1234" });
+  plan.update(b, { status: "unknown" });
+  plan.clearPlanned();
+  assert.deepEqual(plan.list().map((l) => l.status).sort(), ["booked", "unknown"]);
+});

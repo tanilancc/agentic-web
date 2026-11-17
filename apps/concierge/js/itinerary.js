@@ -3,7 +3,7 @@
 // as text, so no time zone is involved.
 
 const KINDS = ["stay", "trip"];
-const STATUSES = ["planned", "booked", "refused", "declined", "unknown"];
+const STATUSES = ["planned", "booking", "booked", "refused", "declined", "unknown"];
 const INACTIVE = ["refused", "declined"];
 
 /**
@@ -37,6 +37,14 @@ export class Itinerary {
     const before = this.items.length;
     this.items = this.items.filter((item) => item.id !== id);
     return this.items.length < before;
+  }
+
+  /**
+   * Remove every leg that is still only planned. Booked and uncertain legs stay, so a
+   * booking's reference is never lost.
+   */
+  clearPlanned() {
+    this.items = this.items.filter((item) => item.status !== "planned");
   }
 
   /**
@@ -132,6 +140,14 @@ export class Itinerary {
       && KINDS.includes(item.kind) && STATUSES.includes(item.status)
       && typeof item.start === "string" && typeof item.end === "string" && typeof item.title === "string"
       && Number.isInteger(item.totalCents) && Number.isInteger(item.partySize));
+    // A leg saved as "booking" was sent to its business when the page closed: it may
+    // have been booked, so it must never come back as planned and be sent again.
+    for (const item of plan.items) {
+      if (item.status === "booking") {
+        item.status = "unknown";
+        item.reason = "The page closed while this was being booked, so it may have been booked. Check with the business before booking it again.";
+      }
+    }
     const highest = plan.items.reduce((max, item) => Math.max(max, Number(item.id.replace("leg-", "")) || 0), 0);
     plan.next = Math.max(Number(data?.next) || 1, highest + 1);
     return plan;

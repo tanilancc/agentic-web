@@ -39,6 +39,13 @@ export class TripBook {
     }
     SavedReservations.merge(this.reservations, SavedReservations.load(this.storage));
   }
+  /**
+   * Add the reservations other pages of this site saved since this book was made.
+   */
+  refresh() {
+    SavedReservations.merge(this.reservations, SavedReservations.load(this.storage));
+  }
+
 
   /**
    * Find the first date, on or after a date, on which a tour runs.
@@ -171,6 +178,9 @@ export class TripBook {
    * :return: errors, or the new reservation with its code
    */
   reserve(trips, contact) {
+    // Read what other pages saved first, so this page never acts on, or overwrites,
+    // a stale list.
+    this.refresh();
     const errors = this.reserveErrors(trips, contact);
     if (Object.keys(errors).length > 0) return { errors };
     const reservation = TripBook.record(this.newCode(), trips, TripRules.cleanContact(contact));
@@ -331,6 +341,9 @@ export class TripBook {
    * :return: errors, or the cancelled reservation
    */
   cancel(code, lastName) {
+    // Read what other pages saved first, so this page never acts on, or overwrites,
+    // a stale list.
+    this.refresh();
     const found = this.cancelErrors(code, lastName);
     if (found.errors) return found;
     found.reservation.status = "cancelled";

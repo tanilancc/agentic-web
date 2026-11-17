@@ -47,3 +47,13 @@ test("corrupt saved data and a throwing storage are ignored", () => {
   const broken = { getItem() { throw new Error("x"); }, setItem() { throw new Error("x"); } };
   assert.ok(new TripBook(broken).reserve([trip()], contact).reservation);
 });
+
+test("a page opened before a reservation elsewhere never erases it", () => {
+  const storage = memoryStorage();
+  const stalePage = new TripBook(storage);
+  const first = new TripBook(storage).reserve([trip()], contact).reservation;
+  const second = stalePage.reserve([trip()], contact).reservation;
+  const saved = SavedReservations.load(storage).map((r) => r.code);
+  assert.ok(saved.includes(first.code));
+  assert.ok(saved.includes(second.code));
+});

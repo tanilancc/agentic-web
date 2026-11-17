@@ -133,3 +133,23 @@ test("every client is disposed", async () => {
   await d.commit("guesthouse", "place_booking", { guests: 2 });
   assert.equal(log.disposed, log.connects.length);
 });
+
+test("an abort during a booking closes the partner's window and reports unknown", async () => {
+  const { d, log } = desk({ script: { place_booking: "hang" } });
+  const controller = new AbortController();
+  const pending = d.commit("guesthouse", "place_booking", { guests: 2 }, { signal: controller.signal });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  controller.abort();
+  const out = await pending;
+  assert.equal(out.status, "unknown");
+  assert.ok(log.disposed >= 1);
+});
+
+test("an abort before the window opens sends nothing", async () => {
+  const { d, log } = desk();
+  const controller = new AbortController();
+  controller.abort();
+  const out = await d.commit("guesthouse", "place_booking", { guests: 2 }, { signal: controller.signal });
+  assert.equal(out.status, "declined");
+  assert.equal(log.executes.length, 0);
+});

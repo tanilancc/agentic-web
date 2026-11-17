@@ -193,25 +193,45 @@ export class PartnerDesk {
    * :param id: The partner id.
    * :param action: A booking action from the partner's catalog.
    * :param args: Its arguments, with the visitor's details.
+   * :param signal: An AbortSignal. An abort closes the partner's window.
    * :return: {status: "booked", value} | {status: "refused" | "declined" | "unknown", reason}.
    */
-  async commit(id, action, args) {
+  async commit(id, action, args, { signal } = {}) {
+    const notSent = (reason) => ({ status: "declined", reason });
+    if (signal?.aborted) {
+      return notSent("The booking was stopped before anything was sent.");
+    }
     const ready = await this.prepare(id, action, args, false);
     if (ready.reason) {
       return { status: "refused", reason: ready.reason };
     }
     const { partner } = ready;
     const client = new this.ClientClass(partner.bridgeUrl);
+    // An abort closes the window and ends whatever is waiting.
+    let onAbort;
+    const aborted = new Promise((resolve, reject) => {
+      onAbort = () => { client.dispose(); reject(new Error("aborted")); };
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+    aborted.catch(() => {});
     try {
       try {
         // Opens the runtime's "Open action site" dialog, then the partner's window.
-        await client.connect(true);
+        await Promise.race([client.connect(true), aborted]);
       } catch (error) {
-        return { status: "declined", reason: `The window at ${partner.label} was not opened, so nothing was sent.` };
+        return notSent(signal?.aborted ? "The booking was stopped before anything was sent."
+          : `The window at ${partner.label} was not opened, so nothing was sent.`);
       }
       let value;
       try {
-        value = await withLimit(client.request("execute", { name: action, args, requestId: requestId() }), this.commitTimeoutMs);
+        let timer;
+        const limit = new Promise((resolve, reject) => { timer = setTimeout(() => reject(new Error("timed out")), this.commitTimeoutMs); });
+        try {
+          value = await Promise.race([client.request("execute", { name: action, args, requestId: requestId() }), limit, aborted]);
+        } finally {
+          // Clear the limit however the booking ended, so no timer outlives it.
+          clearTimeout(timer);
+        }
       } catch (error) {
         if (/User declined; action not started/.test(error.message)) {
           return { status: "declined", reason: `The visitor did not confirm at ${partner.label}. Nothing was booked.` };
@@ -224,6 +244,7 @@ export class PartnerDesk {
       }
       return { status: "refused", reason: String(value?.reason || `${partner.label} refused the booking.`) };
     } finally {
+      signal?.removeEventListener("abort", onAbort);
       client.dispose();
     }
   }

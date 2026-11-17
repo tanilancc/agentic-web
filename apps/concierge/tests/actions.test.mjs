@@ -34,8 +34,8 @@ function fakeDesk({ prices = { guesthouse: 36000, harbor_tours: 7600 }, bookAs =
       if (action === "quote_trip") return { tourId: args.tourId, name: "<b>Seal Rocks</b> Cruise", date: args.date, time: args.time, minutes: 90, adults: args.adults, children: args.children, totalCents: prices.harbor_tours };
       return { rooms: [{ roomId: "garden", name: "Garden Room", maxGuests: 2, totalCents: prices.guesthouse }] };
     },
-    commit: async (id, action, args) => {
-      calls.push(["commit", id, action, args]);
+    commit: async (id, action, args, options = {}) => {
+      calls.push(["commit", id, action, args, options.signal]);
       return bookAs[id] || { status: "booked", value: { ok: true, code: id === "guesthouse" ? "TW-ABCD" : "HT-EFGH", totalCents: args.expectedTotalCents } };
     },
   };
@@ -185,4 +185,80 @@ test("no tool result ever holds the card's name, email or phone", async () => {
   for (const secret of SECRETS) {
     assert.ok(!text.includes(secret), secret);
   }
+});
+
+// --- Review fixes: legs in flight, aborts, partner text, removals ---------------------
+
+test("a leg is marked as booking, and saved, before anything is sent to its partner", async () => {
+  const desk = fakeDesk();
+  const { run, plan, saved } = setup({ desk });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  let seen = null;
+  const commit = desk.commit;
+  desk.commit = async (...args) => { seen = { status: plan.list()[0].status, saves: saved() }; return commit(...args); };
+  await run("book_trip", {});
+  assert.deepEqual(seen, { status: "booking", saves: 2 });
+});
+
+test("book_trip uses the runtime's longest limit, and stops at an abort without starting the next leg", async () => {
+  const desk = fakeDesk();
+  const { run, plan, entries } = setup({ desk });
+  assert.equal(entries.find((e) => e.name === "book_trip").timeoutMs, 300000);
+  await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  const controller = new AbortController();
+  const commit = desk.commit;
+  desk.commit = async (...args) => { const out = await commit(...args); controller.abort(); return out; };
+  const out = await entries.find((e) => e.name === "book_trip").execute({}, { requestId: "t", signal: controller.signal });
+  assert.equal(desk.calls.filter((c) => c[0] === "commit").length, 1);
+  assert.deepEqual(plan.list().map((l) => l.status), ["booked", "planned"]);
+  assert.match(out.stopped, /stopped/i);
+});
+
+test("the partner desk gets the abort signal, so an open window is closed", async () => {
+  const desk = fakeDesk();
+  const { run, entries } = setup({ desk });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  const controller = new AbortController();
+  await entries.find((e) => e.name === "book_trip").execute({}, { requestId: "t", signal: controller.signal });
+  assert.equal(desk.calls.find((c) => c[0] === "commit")[4], controller.signal);
+});
+
+test("a partner's reason or code never brings the card's details back to the model", async () => {
+  const desk = fakeDesk({ bookAs: {
+    guesthouse: { status: "refused", reason: `No room for ${CARD.email} (${CARD.firstName} ${CARD.lastName}, ${CARD.phone}).` },
+    harbor_tours: { status: "booked", value: { ok: true, code: CARD.email } },
+  } });
+  const { run } = setup({ desk });
+  await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  const out = await run("book_trip", {});
+  for (const secret of SECRETS) {
+    assert.ok(!JSON.stringify(out).includes(secret), secret);
+  }
+  assert.equal(out.legs[0].status, "refused");
+  assert.equal(out.legs[1].status, "unknown");
+  assert.match(out.legs[1].reason, /no usable reference/);
+});
+
+test("a very long partner reason is cut short", async () => {
+  const desk = fakeDesk({ bookAs: { harbor_tours: { status: "refused", reason: "x".repeat(5000) } } });
+  const { run } = setup({ desk });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  const out = await run("book_trip", {});
+  assert.ok(out.legs[0].reason.length <= 300);
+});
+
+test("a booked or uncertain leg cannot be removed, so its reference is never lost", async () => {
+  const desk = fakeDesk({ bookAs: { harbor_tours: { status: "unknown", reason: "No answer." } } });
+  const { run, plan } = setup({ desk });
+  await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  await run("plan_leg", { partner: "harbor_tours", argsJson: JSON.stringify(TRIP) });
+  await run("book_trip", {});
+  for (const leg of plan.list()) {
+    const out = await run("remove_leg", { id: leg.id });
+    assert.equal(out.ok, false);
+    assert.match(out.reason, /cannot be removed/);
+  }
+  assert.equal(plan.list().length, 2);
 });

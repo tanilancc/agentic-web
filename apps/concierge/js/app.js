@@ -60,8 +60,9 @@ export class ConciergeApp {
       ClientClass: ActionBridgeClient,
       validate: validateData,
     });
+    // Clears only legs that are still planned: a booking's reference is never thrown away.
     doc.getElementById("clear-plan")?.addEventListener("click", () => {
-      this.plan = new Itinerary();
+      this.plan.clearPlanned();
       this.save();
     });
     this.render();
@@ -124,10 +125,12 @@ export class ConciergeApp {
     if (missing.length) {
       return { refusal: `The contact card on the page is missing: ${missing.join(", ")}. Ask the visitor to fill it in.` };
     }
+    // Each line is keyed by its leg number, never by the business's own name for it, so
+    // no business can merge, hide or replace a line of this dialog.
     const details = {};
-    for (const leg of planned) {
-      details[leg.title] = `${PARTNERS.find((p) => p.id === leg.partner)?.label || leg.partner}, ${leg.start.replace("T", " ")}, ${dollars(leg.totalCents)}`;
-    }
+    planned.forEach((leg, index) => {
+      details[`Leg ${index + 1}: ${leg.title}`] = `${PARTNERS.find((p) => p.id === leg.partner)?.label || leg.partner}, ${leg.start.replace("T", " ")}, ${dollars(leg.totalCents)}`;
+    });
     details.Total = dollars(planned.reduce((sum, leg) => sum + leg.totalCents, 0));
     details["Booked for"] = `${card.firstName} ${card.lastName}, ${card.email}, ${card.phone}`;
     return details;

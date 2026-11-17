@@ -105,6 +105,9 @@ export class ConciergeActions {
       name: "book_trip",
       description: "Book every planned leg, each on its own partner's site, with the visitor's contact card. The visitor confirms the whole trip here, then each booking in that partner's window. Returns each leg's result: booked with a code, refused, declined or unknown. Never retries.",
       effect: "irreversible",
+      // The runtime's longest limit. A trip that takes longer is stopped safely: the leg
+      // in flight becomes unknown, the rest stay planned, and a later call books only those.
+      timeoutMs: 300000,
       inputSchema: { type: "object", additionalProperties: false, properties: {} },
       execute: ConciergeActions.bookTrip,
     });
@@ -157,9 +160,15 @@ export class ConciergeActions {
 
   static removeLeg(args) {
     const { plan, save } = ConciergeActions.page();
-    if (!plan.remove(args.id)) {
+    const leg = plan.list().find((item) => item.id === args.id);
+    if (!leg) {
       return { ok: false, reason: `No leg ${args.id} in the itinerary.` };
     }
+    // A booked or uncertain leg holds the only record of its reference here.
+    if (!["planned", "refused", "declined"].includes(leg.status)) {
+      return { ok: false, reason: `${leg.title} is ${leg.status} and cannot be removed here. Change or cancel it on the business's own page.` };
+    }
+    plan.remove(args.id);
     save();
     return { ok: true };
   }
@@ -179,7 +188,42 @@ export class ConciergeActions {
     return Object.entries(CARD_FIELDS).filter(([key]) => !String(card?.[key] ?? "").trim()).map(([, label]) => label);
   }
 
-  static async bookTrip() {
+  /**
+   * Make a business's free text safe to hand to the model: remove the visitor's card
+   * details from it, and cut it short. The business has just received those details,
+   * and its text becomes a tool result.
+   *
+   * :param text: The business's text.
+   * :param card: The contact card.
+   * :param max: The longest text kept.
+   * :return: The cleaned text.
+   */
+  static clean(text, card, max) {
+    let out = String(text ?? "");
+    for (const value of Object.values(card)) {
+      const secret = String(value ?? "").trim();
+      if (secret.length >= 2) {
+        out = out.split(new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")).join("[your details]");
+      }
+    }
+    return out.slice(0, max);
+  }
+
+  /**
+   * Turn a business's answer into a leg's result, with nothing from the card in it.
+   */
+  static result(outcome, card) {
+    if (outcome.status === "booked") {
+      const code = String(outcome.value?.code ?? "");
+      if (/^[A-Za-z0-9-]{1,40}$/.test(code) && ConciergeActions.clean(code, card, 40) === code) {
+        return { status: "booked", code };
+      }
+      return { status: "unknown", reason: "The business said yes but sent no usable reference, so it may have been booked. Check with the business before booking it again." };
+    }
+    return { status: outcome.status, reason: ConciergeActions.clean(outcome.reason, card, 300) };
+  }
+
+  static async bookTrip(args, { signal } = {}) {
     const { desk, plan, card, save } = ConciergeActions.page();
     const planned = plan.list().filter((leg) => leg.status === "planned");
     if (!planned.length) {
@@ -193,15 +237,19 @@ export class ConciergeActions {
     }
     const results = [];
     for (const leg of planned) {
+      if (signal?.aborted) {
+        return { legs: results, stopped: "Booking was stopped. The legs not listed here are still planned and were not sent." };
+      }
       const partner = ConciergeActions.partner(leg.partner);
+      // Saved before anything is sent, so a reload or a retry can never send it again.
+      plan.update(leg.id, { status: "booking" });
+      save();
       const outcome = await desk.commit(partner.id, partner.commitAction, {
         ...partner.commitArgs(leg.commit.args, contact),
         expectedTotalCents: leg.totalCents,
-      });
-      const fields = outcome.status === "booked"
-        ? { status: "booked", code: String(outcome.value.code) }
-        : { status: outcome.status, reason: String(outcome.reason || "") };
-      plan.update(leg.id, fields);
+      }, { signal });
+      const fields = ConciergeActions.result(outcome, contact);
+      plan.update(leg.id, { code: undefined, reason: undefined, ...fields });
       save();
       results.push({ id: leg.id, title: leg.title, ...fields });
     }
