@@ -1,9 +1,10 @@
 // The Try it page: run another site's published agents here, on the visitor's own key.
 //
-// The other site's network runs as this page's top network, so its manifest would
-// normally choose where a saved key is sent (its llm_router.byok_router). Beacon always
-// names the router itself: the visitor's own choice, or Beacon's default. A site's
-// manifest never decides where the visitor's key goes.
+// The page's own network is Beacon's Try it shell (try/beacon_try). The site being tried
+// is bound to the shell's "target" link slot and runs as a peer. So the page's brand,
+// theme, router and actions come from Beacon's manifest, never from the site's: a site
+// cannot put markup in the page or choose where the visitor's key goes. Beacon still
+// names the router itself, the visitor's choice or Beacon's default.
 
 import { parseNetworkUrl } from "./checks/snapshot.js";
 import { ask } from "./confirm.js";
@@ -13,6 +14,11 @@ import { el } from "./dom.js";
  * Beacon's default router, as in its own agent-manifest.json.
  */
 export const BEACON_ROUTER = "https://api.otari.ai/api/v1";
+
+/**
+ * The folder of Beacon's Try it shell network.
+ */
+export const SHELL = "try";
 
 /**
  * The router the visitor chose in AI model settings, or Beacon's default.
@@ -34,13 +40,15 @@ export class TryIt {
    * :param bootImpl: The runtime's boot(root, options).
    * :param confirmImpl: A function (origin) -> Promise of true when the visitor agrees.
    * :param routerImpl: A function returning the router a key may be sent to.
+   * :param beaconOrigin: Beacon's own origin, where the shell network is published.
    */
-  constructor({ doc = document, location = window.location, bootImpl, confirmImpl, routerImpl = visitorRouter } = {}) {
+  constructor({ doc = document, location = window.location, bootImpl, confirmImpl, routerImpl = visitorRouter, beaconOrigin } = {}) {
     this.doc = doc;
     this.location = location;
     this.bootImpl = bootImpl || (async (root, options) => (await import("../runtime/index.js")).boot(root, options));
     this.confirmImpl = confirmImpl || ((origin) => this.ask(origin));
     this.routerImpl = routerImpl;
+    this.beaconOrigin = beaconOrigin || location.origin;
     this.status = doc.getElementById("try-status");
   }
 
@@ -75,7 +83,20 @@ export class TryIt {
   }
 
   /**
-   * Read ?site=, ask, and boot the runtime on the site.
+   * Bind the shell's link slot to the site being tried, and allow only its origin.
+   *
+   * :param engine: The booted engine.
+   * :param targetUrl: The site's network URL.
+   */
+  static bind(engine, targetUrl) {
+    engine.top.network.setLink("target", targetUrl);
+    engine.runtimeAllowedPeers.add(new URL(targetUrl).origin);
+    // The slot is already bound, so the chat never asks the visitor for a URL.
+    engine.onLinkRequired = async () => targetUrl;
+  }
+
+  /**
+   * Read ?site=, ask, boot Beacon's shell and bind the site to it.
    *
    * :return: The booted runtime, or null.
    */
@@ -93,10 +114,11 @@ export class TryIt {
     this.say(`Loading agents from ${parsed.origin}…`);
     try {
       const booted = await this.bootImpl("#agent-app", {
-        originUrl: parsed.base,
+        originUrl: `${this.beaconOrigin}/${SHELL}`,
         sandboxWorkerUrl: "/runtime/sandbox-worker.js",
         router: await this.routerImpl(),
       });
+      TryIt.bind(booted.engine, `${parsed.base}/${parsed.networkName}`);
       this.say(`Running agents published by ${parsed.origin}. Add your key in AI model settings to chat.`, address);
       return booted;
     } catch (error) {

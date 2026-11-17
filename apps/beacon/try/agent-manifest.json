@@ -1,0 +1,57 @@
+{
+  "brand": "Beacon: Try it",
+  "networks": [
+    {
+      "name": "beacon_try",
+      "front_man": "try_desk",
+      "hocon": "./beacon_try.network.json",
+      "description": "Passes your messages to the site you are trying. It runs here, on your key.",
+      "tags": ["beacon", "try-it"],
+      "sample_queries": ["What do you offer, and how do I book?"]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Beacon allows only the site being tried, after the visitor agrees."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "beacon_try",
+    "front_man": "try_desk",
+    "available": false,
+    "reason": "This is Beacon's Try it shell, not a service."
+  },
+  "theme": {
+    "primary": "#1f5d73"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "beacon_try",
+        "front_man": "try_desk",
+        "aliases": ["beacon_try"],
+        "url": "beacon_try"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  }
+}

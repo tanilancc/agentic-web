@@ -21,7 +21,7 @@
 
   <section class="assistant try" aria-labelledby="try-heading">
     <h1 id="try-heading">Try an agent site</h1>
-    <p class="assistant-note">The site's agents run in this browser, on the key and provider you choose below. Your messages go to that provider. The site gets none of Beacon's tools, and you are asked before it contacts any other site.</p>
+    <p class="assistant-note">The site's agents run in this browser, on the key and provider you choose below. Your messages go to that provider. Beacon passes each message to the site's assistant after you agree on a card. The site gets none of Beacon's tools, and you are asked before it contacts any other site.</p>
     <p id="try-status" role="status">Starting…</p>
     <div id="agent-app">
       <div data-ns-slot="header"></div>
@@ -33,9 +33,6 @@
     </div>
   </section>
 
-  <script type="module">
-    import { TryIt } from "./js/try-it.js";
-    await new TryIt().start();
-  </script>
+  <script type="module" src="js/try-main.js"></script>
 </body>
 </html>

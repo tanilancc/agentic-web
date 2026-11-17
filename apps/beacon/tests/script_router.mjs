@@ -10,7 +10,7 @@ export class ScriptRouter {
    * :param key: The fake key the page should send.
    * :param reply: A function (request) -> {text} or {tool, arguments}. request is
    *     {system, messages, tools, role}, where role is "canary" when the system prompt is
-   *     Beacon's canary desk, "auditor" for Beacon's auditor, and "peer" otherwise.
+   *     Beacon's canary desk, "auditor" for Beacon's auditor, "try" for the Try it shell, and "peer" otherwise.
    */
   constructor(key, reply) {
     this.key = key;
@@ -36,7 +36,8 @@ export class ScriptRouter {
     const parsed = JSON.parse(body);
     const system = String(parsed.messages?.[0]?.content ?? "");
     const role = system.includes("Beacon canary desk") ? "canary"
-      : system.includes("Beacon instruction auditor") ? "auditor" : "peer";
+      : system.includes("Beacon instruction auditor") ? "auditor"
+        : system.includes("You connect the visitor to another website's assistant") ? "try" : "peer";
     const request = { system, messages: parsed.messages || [], tools: (parsed.tools || []).map((tool) => tool.function?.name), role };
     record.role = role;
     let answer;

@@ -1,0 +1,7 @@
+{
+  "protocol": "nsdeploy-agent-mcp/v1",
+  "network": "beacon_try",
+  "front_man": "try_desk",
+  "available": false,
+  "reason": "This is Beacon's Try it shell, not a service."
+}

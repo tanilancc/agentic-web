@@ -25,6 +25,12 @@
   Access-Control-Allow-Origin: *
 /auditor/links.json
   Access-Control-Allow-Origin: *
+/try/agent-manifest.json
+  Access-Control-Allow-Origin: *
+/try/beacon_try.network.json
+  Access-Control-Allow-Origin: *
+/try/links.json
+  Access-Control-Allow-Origin: *
 /index/sites.json
   Access-Control-Allow-Origin: *
 /index/status.json

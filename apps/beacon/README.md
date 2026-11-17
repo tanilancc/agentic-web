@@ -14,7 +14,7 @@ the visitor's browser on the visitor's own model key. It has no server.
 | **Inspector** | No | Paste a network URL. Beacon reads the site's public files from your browser, the way a calling site would, and runs 20 checks. A report link (`?site=...`) asks before it contacts the site. |
 | **Red team** | Yes | Beacon runs the site's agents as a peer of its own test caller, then reports where your key went, what reached the site, and whether the caller was steered. |
 | **Directory** | No | A list of agent sites with their latest level. Pick one to inspect it. |
-| **Try it** | Yes | Run a site's agents inside Beacon, after you agree. They get none of Beacon's tools. |
+| **Try it** | Yes | Run a site's agents inside Beacon, after you agree. Beacon's small shell network passes each message to the site's assistant, which runs as a peer and gets none of Beacon's tools. |
 | **Ask Beacon** | Yes | A chat assistant that searches the directory and explains reports. It answers only from Beacon's own tools. |
 
 ## Run it locally
@@ -104,10 +104,12 @@ per run before anything starts.
 ## Your key
 
 The key you enter stays in this browser and is sent only to the model provider you
-choose. On **Try it** and in red-team runs, another site's agents run as the top
-network, and the runtime would normally send a saved key to the router that site's
-manifest names. Beacon always names the router itself, your choice or Beacon's default,
-so a site's manifest never decides where your key goes. A test pins this.
+choose. On **Try it** and in red-team runs, the page's own network is always one of
+Beacon's (`try/`, `canary/` or `auditor/`), and the other site's agents run only as a
+peer. So the site's manifest never sets the page's brand, theme, router or actions,
+and a peer always runs on your router (spec section 4, "Router-only disclosure").
+Beacon also names the router itself, your choice or Beacon's default. Tests pin both,
+including a site that marks Beacon's router as its own "mock" to try to redirect the key.
 
 ## Get listed
 
@@ -151,9 +153,9 @@ open to any origin.
 - The directory lists what was submitted and re-checked. It does not rank sites or call
   them trustworthy.
 - Red team and Try it are offered only for sites that are not "Not conformant".
-- The canary and auditor networks are Beacon's own test tools. Their build prints four
-  and two warnings about missing template rules (peer rules, CRUSE): they are not meant
-  to be called by other sites.
+- The canary, auditor and Try it shell networks are Beacon's own tools. Their builds
+  print four, two and four warnings about missing template rules (peer rules, CRUSE,
+  link slots): they are not meant to be called by other sites.
 
 ## Tests
 
@@ -174,7 +176,7 @@ origins in Chromium, with a fake key. See `tests/beacon/README.md`.
 | `js/redteam/` | Recorder, canary harness, findings, auditor, the red-team tab |
 | `js/app.js`, `js/report-view.js`, `js/directory*.js`, `js/try-it.js` | Page logic |
 | `beacon.hocon`, `site.js`, `site-actions.js` | Beacon's own chat assistant |
-| `canary/`, `auditor/` | Beacon's test caller and auditor networks |
+| `canary/`, `auditor/`, `try/` | Beacon's test caller, auditor and Try it shell networks |
 | `index/`, `badges/` | The directory and its badges |
 | `runtime/` | Copy of `skills/agentify-website/runtime/`, written by `tools/sync_runtime.mjs`. Do not edit. |
 | `bridge/`, `.well-known/`, `*.network.json`, `agent-mcp.json` | Written by the skill's build script. Do not edit. |
