@@ -1,0 +1,82 @@
+{
+  "brand": "Town Concierge",
+  "networks": [
+    {
+      "name": "marrow_point_concierge",
+      "front_man": "concierge",
+      "hocon": "./marrow_point_concierge.network.json",
+      "description": "Plan a trip across Marrow Point businesses and book each leg on its own site.",
+      "tags": [
+        "agentified-website",
+        "travel",
+        "booking"
+      ],
+      "sample_queries": [
+        "What's free at the guesthouse for two people from the 10th to the 12th of next month?",
+        "Add a seal trip on the 11th for both of us, and check it fits the stay.",
+        "Book the whole trip.",
+        "Can you pay for it with my card?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Partner sites are contacted only through their partner desks, after the visitor agrees on a card."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "marrow_point_concierge",
+    "front_man": "concierge",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#1b5e73"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "marrow_point_concierge",
+        "front_man": "concierge",
+        "aliases": [
+          "marrow_point_concierge",
+          "concierge"
+        ],
+        "url": "marrow_point_concierge"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "list_partners",
+      "search_partner",
+      "plan_leg",
+      "remove_leg",
+      "get_itinerary",
+      "book_trip"
+    ]
+  }
+}

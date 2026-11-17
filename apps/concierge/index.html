@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; frame-src *; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>Town Concierge: plan a trip to Marrow Point</title>
+  <meta name="description" content="Plan a short trip to Marrow Point across its independent businesses, with live prices, and book each part with the business that runs it.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <p class="wordmark">Town Concierge</p>
+    <p class="tagline">Marrow Point, planned with the people who run it</p>
+  </header>
+
+  <main class="page">
+    <section class="intro" aria-labelledby="intro-title">
+      <h1 id="intro-title">Plan a weekend in Marrow Point</h1>
+      <p>Ask for a room at the Tidewhistle Guesthouse and a trip with Marrow Point Harbor Tours. The assistant checks live availability and prices with each business, builds one plan, and points out anything that doesn't fit. When you book, each business confirms its part in its own window.</p>
+    </section>
+
+    <div class="columns">
+      <section class="panel trip" aria-labelledby="trip-title">
+        <div class="panel-head">
+          <h2 id="trip-title">Your trip</h2>
+          <button id="clear-plan" class="quiet" type="button">Clear</button>
+        </div>
+        <div id="board" aria-live="polite"></div>
+      </section>
+
+      <section class="panel card" aria-labelledby="card-title">
+        <h2 id="card-title">Contact card</h2>
+        <p class="note">Stays in this browser. The assistant never sees it. It goes only to each business's booking window, where you see it before you confirm.</p>
+        <form id="contact-card" class="card-form" autocomplete="on">
+          <label>First name <input name="firstName" autocomplete="given-name" maxlength="60"></label>
+          <label>Last name <input name="lastName" autocomplete="family-name" maxlength="60"></label>
+          <label>Email <input name="email" type="email" autocomplete="email" maxlength="120"></label>
+          <label>Phone <input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+        </form>
+      </section>
+    </div>
+
+    <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+      <h2 id="assistant-heading">Ask the Concierge</h2>
+      <p class="note">Your messages go to the AI provider you choose in the settings below. You are asked before each business is first contacted, and you confirm every booking twice: here, and in the business's own window.</p>
+      <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load.</p>
+      <div id="agent-app">
+        <div data-ns-slot="header"></div>
+        <div class="assistant-panels">
+          <div data-ns-slot="chat"></div>
+          <div data-ns-slot="agents"></div>
+        </div>
+        <div data-ns-slot="settings"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="site.js"></script>
+</body>
+</html>
