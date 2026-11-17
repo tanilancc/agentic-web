@@ -31,7 +31,7 @@ const KEY = "sk-test-not-a-real-key";
  * points to its page; the auditor finds nothing and judges answers as pointing to the site.
  */
 function reply(request) {
-  if (request.role === "canary") {
+  if (request.role === "canary" || request.role === "try") {
     return ScriptRouter.hasToolResult(request) ? { text: "They pointed me to their page." }
       : { tool: "target", arguments: { request: "What do you offer, and how do I book?" } };
   }
@@ -118,6 +118,13 @@ async function main() {
     await waitFor(`${SITE}/agent-manifest.json`);
     const errors = [];
     const context = await browser.newContext();
+    // Record every Content-Security-Policy violation: the policy must not break the page.
+    await context.addInitScript(() => {
+      window.__cspViolations = [];
+      document.addEventListener("securitypolicyviolation", (event) => {
+        window.__cspViolations.push(`${event.violatedDirective} ${event.blockedURI}`);
+      });
+    });
     // The visitor's key setup, as the settings panel would save it in this tab.
     await context.addInitScript(([key, routerUrl]) => {
       if (location.origin === "http://localhost:8090") {
@@ -158,8 +165,22 @@ async function main() {
     await tryPage.goto(`${BEACON}/try.html?site=${encodeURIComponent(NETWORK)}`);
     await tryPage.click("dialog[open] button:has-text(\"Run it here\")");
     await tryPage.waitForFunction(() => /Running agents|could not be loaded/.test(document.querySelector("#try-status").textContent), null, { timeout: 20000 });
-    const brand = await tryPage.textContent("#agent-app");
-    check("4. Try it mounts the guesthouse's chat", /Tidewhistle/.test(brand));
+    // Send one message: the shell passes it to the guesthouse after the consent card.
+    await tryPage.fill("#ns-input", "What do you offer?");
+    await tryPage.click("#ns-send");
+    await tryPage.click(".ns-consent-actions button[data-d=allow]", { timeout: 20000 });
+    await tryPage.waitForFunction(() => /pointed me to their page/.test(document.querySelector("#ns-msgs").textContent), null, { timeout: 30000 });
+    const peerRan = await tryPage.evaluate(() => window.__nsweb.engine.trace.events
+      .some((event) => event.kind === "remote_call" && event.phase === "end" && event.status === "ok" && /127\.0\.0\.1:8080/.test(event.peerOrigin)));
+    const tryState = await tryPage.evaluate(() => ({
+      header: document.querySelector("#agent-app").textContent,
+      bound: window.__nsweb?.engine?.top?.network?.getLink("target"),
+      top: window.__nsweb?.engine?.top?.base,
+      csp: window.__cspViolations,
+    }));
+    check("4. Try it mounts Beacon's shell with the guesthouse bound as a peer",
+      /Beacon: Try it/.test(tryState.header) && tryState.bound === NETWORK && tryState.top === `${BEACON}/try` && tryState.csp.length === 0 && peerRan,
+      `bound ${tryState.bound}; top ${tryState.top}; guesthouse answered as a peer: ${peerRan}; CSP violations ${tryState.csp.length}`);
     await tryPage.close();
 
     // 5: a red-team run with the scripted router.
@@ -176,7 +197,9 @@ async function main() {
       statuses.length === 7 && keyed.length === 0 && runRequests.length > 0 && chats.every((record) => record.keyOk),
       `${statuses.join(" ")}; ${runRequests.length} guesthouse requests, ${keyed.length} with Authorization; ${chats.length} model calls`);
 
-    check("No page errors", errors.length === 0, errors.join(" | "));
+    const violations = await page.evaluate(() => window.__cspViolations);
+    check("No page errors or Content-Security-Policy violations", errors.length === 0 && violations.length === 0,
+      [...errors, ...violations].join(" | "));
   } finally {
     await browser.close();
     for (const server of servers) {

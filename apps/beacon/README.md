@@ -136,9 +136,11 @@ The badge name is the URL's host and path with every other character replaced by
 
 Create a Pages project with **root directory** `apps/beacon` and **no build command**.
 `_headers` sets the CORS headers on the public agent files, keeps `bridge/` framable,
-and locks down the runtime's sandbox worker. Beacon sends no page-wide
-Content-Security-Policy: inspecting arbitrary sites needs `connect-src` and `frame-src`
-open to any origin.
+refuses framing of the pages themselves, and locks down the runtime's sandbox worker.
+
+Both pages carry a Content-Security-Policy that allows only Beacon's own scripts. It
+leaves `connect-src` and `frame-src` open, because inspecting any site needs them, but a
+site's data can never run as script on Beacon's origin, where the visitor's key is kept.
 
 ## Limits
 
