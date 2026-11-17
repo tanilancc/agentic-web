@@ -5,21 +5,27 @@
       "dir": "apps/beacon",
       "port": 8090,
       "openAs": "localhost",
-      "shared": []
+      "shared": [
+        "privacy.html"
+      ]
     },
     {
       "id": "guesthouse",
       "dir": "apps/town/guesthouse",
       "port": 8080,
       "openAs": "127.0.0.1",
-      "shared": []
+      "shared": [
+        "privacy.html"
+      ]
     },
     {
       "id": "harbor_tours",
       "dir": "apps/town/harbor_tours",
       "port": 8081,
       "openAs": "localhost",
-      "shared": []
+      "shared": [
+        "privacy.html"
+      ]
     },
     {
       "id": "concierge",
@@ -29,7 +35,8 @@
       "shared": [
         "partner-desk.js",
         "contact-card.js",
-        "site-origin.js"
+        "site-origin.js",
+        "privacy.html"
       ]
     },
     {
@@ -40,7 +47,8 @@
       "shared": [
         "vendor-pricing.js",
         "vendor-desk.js",
-        "vendor-page.js"
+        "vendor-page.js",
+        "privacy.html"
       ]
     },
     {
@@ -51,7 +59,8 @@
       "shared": [
         "vendor-pricing.js",
         "vendor-desk.js",
-        "vendor-page.js"
+        "vendor-page.js",
+        "privacy.html"
       ]
     },
     {
@@ -62,7 +71,8 @@
       "shared": [
         "vendor-pricing.js",
         "vendor-desk.js",
-        "vendor-page.js"
+        "vendor-page.js",
+        "privacy.html"
       ]
     },
     {
@@ -74,7 +84,8 @@
         "partner-desk.js",
         "contact-card.js",
         "vendor-pricing.js",
-        "site-origin.js"
+        "site-origin.js",
+        "privacy.html"
       ]
     }
   ]

@@ -222,3 +222,6 @@ only to the AI provider you chose. Another site is contacted only after you allo
 a card, and it receives only the message shown on that card, never your key, your chat
 or your contact details. Bookings and orders are confirmed by you, twice: in the site's
 dialog, and in the business's own window.
+
+The full **Privacy and terms** page is linked at the bottom of every site, for example
+https://oaw-concierge.pages.dev/shared/privacy.html.
