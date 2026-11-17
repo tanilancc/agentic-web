@@ -225,6 +225,9 @@ Their READMEs show how to serve both on two host names.
 
 - [Beacon](apps/beacon/README.md): checks any agentic website against the spec, red-teams
   its agents, and lists agent sites in a directory where they can be tried.
+- [Town Concierge](apps/concierge/README.md): plans a trip across independent businesses
+  with live prices from each, and books every part on the site that runs it, through
+  the [town's partner desks](apps/town/README.md).
 
 ## Infrastructure
 
