@@ -1,5 +1,25 @@
 {
   "sites": [
-    { "id": "beacon", "dir": "apps/beacon", "port": 8090, "openAs": "localhost", "shared": [] }
+    {
+      "id": "beacon",
+      "dir": "apps/beacon",
+      "port": 8090,
+      "openAs": "localhost",
+      "shared": []
+    },
+    {
+      "id": "guesthouse",
+      "dir": "apps/town/guesthouse",
+      "port": 8080,
+      "openAs": "127.0.0.1",
+      "shared": []
+    },
+    {
+      "id": "harbor_tours",
+      "dir": "apps/town/harbor_tours",
+      "port": 8081,
+      "openAs": "localhost",
+      "shared": []
+    }
   ]
 }

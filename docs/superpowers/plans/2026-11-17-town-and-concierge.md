@@ -22,7 +22,7 @@
 - Personal details (name, email, phone) never enter a model prompt, a tool result or a partner-network request. They go only into a vendor's commit arguments, which the vendor's own window shows before anything is booked.
 - A commit whose outcome is unknown (timeout, popup closed after the request was sent) is reported as `unknown` and never retried automatically (spec §3.1).
 - Every booking passes the total the visitor saw; the vendor refuses a mismatch.
-- Local origins: Concierge `http://localhost:8093`, guesthouse `http://127.0.0.1:8081`, harbor tours `http://localhost:8082`. Partner `callerOrigins` come from one module per vendor, `partner-callers.js`, which lists these plus the deployed Concierge origin once known.
+- Local origins: Concierge `http://localhost:8093`, guesthouse `http://127.0.0.1:8080`, harbor tours `http://localhost:8081`. Partner `callerOrigins` come from one module per vendor, `partner-callers.js`, which lists these plus the deployed Concierge origin once known.
 
 ## Review Focus
 
