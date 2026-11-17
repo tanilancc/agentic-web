@@ -6,6 +6,7 @@
 // only to each partner's own window, where the visitor sees it before confirming.
 
 import { PARTNERS } from "./js/partners.js";
+import { safeOutcome } from "./shared/partner-desk.js";
 
 const PARTNER_IDS = PARTNERS.map((partner) => partner.id);
 const CARD_FIELDS = { firstName: "first name", lastName: "last name", email: "email", phone: "phone" };
@@ -188,41 +189,6 @@ export class ConciergeActions {
     return Object.entries(CARD_FIELDS).filter(([key]) => !String(card?.[key] ?? "").trim()).map(([, label]) => label);
   }
 
-  /**
-   * Make a business's free text safe to hand to the model: remove the visitor's card
-   * details from it, and cut it short. The business has just received those details,
-   * and its text becomes a tool result.
-   *
-   * :param text: The business's text.
-   * :param card: The contact card.
-   * :param max: The longest text kept.
-   * :return: The cleaned text.
-   */
-  static clean(text, card, max) {
-    let out = String(text ?? "");
-    for (const value of Object.values(card)) {
-      const secret = String(value ?? "").trim();
-      if (secret.length >= 2) {
-        out = out.split(new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")).join("[your details]");
-      }
-    }
-    return out.slice(0, max);
-  }
-
-  /**
-   * Turn a business's answer into a leg's result, with nothing from the card in it.
-   */
-  static result(outcome, card) {
-    if (outcome.status === "booked") {
-      const code = String(outcome.value?.code ?? "");
-      if (/^[A-Za-z0-9-]{1,40}$/.test(code) && ConciergeActions.clean(code, card, 40) === code) {
-        return { status: "booked", code };
-      }
-      return { status: "unknown", reason: "The business said yes but sent no usable reference, so it may have been booked. Check with the business before booking it again." };
-    }
-    return { status: outcome.status, reason: ConciergeActions.clean(outcome.reason, card, 300) };
-  }
-
   static async bookTrip(args, { signal } = {}) {
     const { desk, plan, card, save } = ConciergeActions.page();
     const planned = plan.list().filter((leg) => leg.status === "planned");
@@ -248,7 +214,7 @@ export class ConciergeActions {
         ...partner.commitArgs(leg.commit.args, contact),
         expectedTotalCents: leg.totalCents,
       }, { signal });
-      const fields = ConciergeActions.result(outcome, contact);
+      const fields = safeOutcome(outcome, contact);
       plan.update(leg.id, { code: undefined, reason: undefined, ...fields });
       save();
       results.push({ id: leg.id, title: leg.title, ...fields });

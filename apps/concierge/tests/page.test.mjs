@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { ConciergeApp, localNow } from "../js/app.js";
 import { Board, dollars, when } from "../js/board.js";
-import { ContactCard, field } from "../js/contact-card.js";
+import { ContactCard, field } from "../shared/contact-card.js";
 import { MiniDocument } from "./mini_dom.mjs";
 
 /**

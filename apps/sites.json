@@ -27,7 +27,8 @@
       "port": 8093,
       "openAs": "localhost",
       "shared": [
-        "partner-desk.js"
+        "partner-desk.js",
+        "contact-card.js"
       ]
     },
     {

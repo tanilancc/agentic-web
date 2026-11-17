@@ -249,3 +249,44 @@ export class PartnerDesk {
     }
   }
 }
+
+/**
+ * Make a business's free text safe to hand to a model: remove the visitor's contact
+ * details from it, and cut it short. The business has just received those details, and
+ * its text becomes a tool result.
+ *
+ * :param text: The business's text.
+ * :param card: The contact card's values.
+ * :param max: The longest text kept.
+ * :return: The cleaned text.
+ */
+export function cleanText(text, card, max) {
+  let out = String(text ?? "");
+  for (const value of Object.values(card || {})) {
+    const secret = String(value ?? "").trim();
+    if (secret.length >= 2) {
+      out = out.split(new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")).join("[your details]");
+    }
+  }
+  return out.slice(0, max);
+}
+
+/**
+ * Turn PartnerDesk.commit's outcome into a result that is safe to show a model:
+ * a booking needs a short plain reference, or it counts as unknown.
+ *
+ * :param outcome: The outcome of commit().
+ * :param card: The contact card's values.
+ * :return: {status, code} or {status, reason}.
+ */
+export function safeOutcome(outcome, card) {
+  if (outcome.status === "booked") {
+    const code = String(outcome.value?.code ?? "");
+    if (/^[A-Za-z0-9-]{1,40}$/.test(code) && cleanText(code, card, 40) === code) {
+      return { status: "booked", code };
+    }
+    return { status: "unknown", reason: "The business said yes but sent no usable reference, so it may have been booked. Check with the business before booking it again." };
+  }
+  return { status: outcome.status, reason: cleanText(outcome.reason, card, 300) };
+}
+

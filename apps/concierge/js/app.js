@@ -6,7 +6,7 @@ import { ActionBridgeClient } from "../runtime/action-transport.js";
 import { validateData } from "../runtime/actions.js";
 import { PartnerDesk } from "../shared/partner-desk.js";
 import { Board, dollars } from "./board.js";
-import { ContactCard } from "./contact-card.js";
+import { ContactCard } from "../shared/contact-card.js";
 import { Itinerary } from "./itinerary.js";
 import { PARTNERS } from "./partners.js";
 
