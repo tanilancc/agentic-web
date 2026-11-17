@@ -39,7 +39,7 @@ function page(store = memoryStorage()) {
   return { doc, form, card, store };
 }
 
-const quote = (name, totalCents, discounts = []) => ({ totalCents, servings: 30, dietServings: { vegetarian: 9, vegan: 3, "gluten-free": 4 }, lines: [{ qty: 2, name }], discounts });
+const quote = (name, totalCents, discounts = []) => ({ ok: true, totalCents, servings: 30, dietServings: { vegetarian: 9, vegan: 3, "gluten-free": 4 }, lines: [{ qty: 2, name }], discounts });
 const plan = (orders, ok = true, problems = []) => ({ orders, check: { ok, problems, totalCents: orders.reduce((s, o) => s + o.quote.totalCents, 0) } });
 const order = (vendor, name, total, discounts) => ({ vendor, time: "17:30", fulfilment: "delivery", items: [{ id: "x", qty: 2 }], quote: quote(name, total, discounts) });
 
@@ -112,7 +112,7 @@ test("the order dialog lists each order by number, the total and who it is for",
   app.mandate = { ...app.mandate, headcount: 30, vegetarian: 6, vegan: 3, glutenFree: 4, budgetCents: 80000, from: "17:00", to: "18:00", flexMinutes: 30 };
   const best = plan([order("green_fork", "Total", 6000), order("green_fork", "refusal", 6000)]);
   best.orders.forEach((o) => { o.quote.servings = 15; o.quote.dietServings = { vegetarian: 9, vegan: 3, "gluten-free": 4 }; });
-  app.search = { plans: [best] };
+  app.search = { plans: [best], catalogs: { green_fork: { id: "green_fork", items: [{ id: "x", priceCents: 1, serves: 20, diets: ["vegan", "gluten-free"] }] } } };
   assert.match(app.reviewAward(0).refusal, /missing/);
   for (const [name, value] of [["firstName", "Ana"], ["lastName", "Silva"], ["email", "ana@example.com"], ["phone", "0123 456 789"]]) {
     card.querySelectorAll("input").find((i) => i.getAttribute("name") === name).value = value;
@@ -134,4 +134,33 @@ test("the page allows only its own scripts and mounts the assistant", async () =
   }
   assert.match(html, /id="agent-app"/);
   assert.match(html, /id="mandate-form"/);
+});
+
+test("a mandate change on the page drops the old plans and says so", () => {
+  const { doc, form, store } = page();
+  const app = new QuorumApp({ doc, store, engine: () => null });
+  app.search = { plans: [], best: null, baseline: null, closest: null, failures: [], notes: [], quotesUsed: 0, capped: false };
+  form.querySelectorAll("input").find((i) => i.getAttribute("name") === "headcount").value = "45";
+  app.readForm();
+  assert.equal(app.search, null);
+  assert.match(doc.getElementById("plans").textContent, /The mandate changed/);
+});
+
+test("only the visitor can start a new order, and only once the last one is finished", () => {
+  const { doc, store } = page();
+  doc.add("button", "new-award");
+  const app = new QuorumApp({ doc, store, engine: () => null });
+  app.award.start([{ vendor: "little_oven", time: "17:30", fulfilment: "delivery", items: [], totalCents: 100 }], "2026-12-10");
+  assert.equal(app.newAward(), false);
+  app.award.update(0, { status: "booked", code: "LO-AB12" });
+  assert.equal(app.newAward(), true);
+  assert.equal(app.award.list().length, 0);
+  assert.equal(JSON.parse(store.getItem(QuorumApp.PAST_KEY))[0].orders[0].code, "LO-AB12");
+});
+
+test("when nothing fits, each vendor's reason is shown", () => {
+  const doc = new MiniDocument();
+  const root = doc.add("div", "plans");
+  new PlanView(root, doc).show({ best: null, baseline: null, closest: null, plans: [], failures: [], notes: [{ vendor: "green_fork", reason: "Green Fork needs at least 120 minutes' notice." }], quotesUsed: 3, capped: false }, []);
+  assert.match(root.textContent, /Green Fork: Green Fork needs at least 120 minutes' notice/);
 });

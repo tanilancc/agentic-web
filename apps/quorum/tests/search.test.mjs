@@ -119,3 +119,73 @@ test("the same quote is never asked for twice", async () => {
   const keys = m.calls.map((c) => JSON.stringify(c));
   assert.equal(new Set(keys).size, keys.length);
 });
+
+// --- Review fixes: menus Quorum cannot read, vendors that die mid-search, reasons ------
+
+import { checkPlan } from "../js/mandate.js";
+import { validateCatalog } from "../js/search.js";
+
+for (const [label, change] of [
+  ["a negative order interval", { slotMinutes: -30 }],
+  ["an order interval of 0", { slotMinutes: 0 }],
+  ["opening hours that are not times", { hours: { from: "noon", to: "21:00" } }],
+  ["an item without diets", { items: [{ id: "x", name: "X", priceCents: 100, serves: 1 }] }],
+  ["an item that serves nobody", { items: [{ id: "x", name: "X", priceCents: 100, serves: 0, diets: [] }] }],
+  ["an item that costs nothing", { items: [{ id: "x", name: "X", priceCents: 0, serves: 1, diets: [] }] }],
+  ["no items", { items: [] }],
+]) {
+  test(`a menu with ${label} is refused, named, and never hangs the search`, async () => {
+    const broken = { ...GREEN_FORK, ...change };
+    assert.ok(validateCatalog(broken));
+    const m = market();
+    m.getCatalog = async (id) => (id === "green_fork" ? broken : CATALOGS[id]);
+    const out = await searchPlans({ vendors: Object.keys(CATALOGS), mandate: MANDATE, ...m, now: NOW });
+    assert.deepEqual(out.failures.map((f) => f.vendor), ["green_fork"]);
+    assert.match(out.failures[0].reason, /menu Quorum cannot read/);
+  });
+}
+
+test("the real menus are all readable", () => {
+  for (const catalog of Object.values(CATALOGS)) {
+    assert.equal(validateCatalog(catalog), "", catalog.id);
+  }
+});
+
+test("a vendor that stops answering after its menu loaded is named once and skipped", async () => {
+  const m = market();
+  const quote = m.quote;
+  m.quote = async (id, args) => (id === "green_fork" ? { ok: false, reason: "Green Fork did not answer in time.", unreachable: true } : quote(id, args));
+  const out = await searchPlans({ vendors: Object.keys(CATALOGS), mandate: MANDATE, ...m, now: NOW });
+  assert.deepEqual(out.failures, [{ vendor: "green_fork", reason: "Green Fork did not answer in time." }]);
+  assert.ok(m.calls.filter((c) => c[0] === "green_fork").length === 0);
+  assert.ok(out.best);
+});
+
+test("when no vendor has an order time in the window, the result says so per vendor", async () => {
+  const out = await searchPlans({ vendors: Object.keys(CATALOGS), mandate: { ...MANDATE, from: "06:00", to: "07:00", flexMinutes: 0 }, ...market(), now: NOW });
+  assert.equal(out.best, null);
+  assert.equal(out.notes.length, 3);
+  assert.ok(out.notes.every((n) => /no order time between 06:00 and 07:00/.test(n.reason)));
+});
+
+test("when every quote is refused, each vendor's own reason comes back", async () => {
+  // A day that has already passed: every vendor refuses for notice.
+  const out = await searchPlans({ vendors: Object.keys(CATALOGS), mandate: { ...MANDATE, date: "2026-11-30" }, ...market(), now: NOW });
+  assert.equal(out.best, null);
+  assert.equal(out.notes.length, 3);
+  assert.ok(out.notes.every((n) => /notice|no dish for one of the diets/.test(n.reason)), JSON.stringify(out.notes));
+  assert.ok(out.notes.some((n) => /notice/.test(n.reason)));
+});
+
+test("baskets feed each diet group as separate people", async () => {
+  // 12 people: 6 vegetarian and 6 gluten-free, as separate people.
+  const m = { ...MANDATE, headcount: 12, vegetarian: 6, vegan: 0, glutenFree: 6 };
+  const out = await searchPlans({ vendors: ["harbour_bakehouse"], mandate: m, ...market(), now: NOW });
+  assert.ok(out.best, JSON.stringify(out.closest?.check));
+  assert.equal(checkPlan({ orders: out.best.orders }, m, out.catalogs).ok, true);
+});
+
+test("the search returns the menus it checked against", async () => {
+  const out = await searchPlans({ vendors: ["little_oven"], mandate: { ...MANDATE, glutenFree: 0 }, ...market(), now: NOW });
+  assert.deepEqual(Object.keys(out.catalogs), ["little_oven"]);
+});

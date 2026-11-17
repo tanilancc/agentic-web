@@ -120,7 +120,7 @@ export class PartnerDesk {
         }
         this.catalogs.set(id, catalog);
       } catch (error) {
-        return { ok: false, reason: error.message === "timed out" ? `${partner.label} did not answer in time.` : `${partner.label} could not be reached: ${error.message}` };
+        return { ok: false, unreachable: true, reason: error.message === "timed out" ? `${partner.label} did not answer in time.` : `${partner.label} could not be reached: ${error.message}` };
       } finally {
         client.dispose();
       }
@@ -140,7 +140,7 @@ export class PartnerDesk {
   async prepare(id, action, args, wantRead) {
     const catalog = await this.catalog(id);
     if (!Array.isArray(catalog)) {
-      return { reason: catalog.reason };
+      return { reason: catalog.reason, unreachable: !!catalog.unreachable };
     }
     const partner = this.partners.get(id);
     const entry = catalog.find((item) => item?.name === action);
@@ -172,7 +172,7 @@ export class PartnerDesk {
   async read(id, action, args) {
     const ready = await this.prepare(id, action, args, true);
     if (ready.reason) {
-      return { ok: false, reason: ready.reason };
+      return { ok: false, reason: ready.reason, ...(ready.unreachable ? { unreachable: true } : {}) };
     }
     const client = new this.ClientClass(ready.partner.bridgeUrl);
     try {
@@ -181,7 +181,8 @@ export class PartnerDesk {
         return client.request("execute", { name: action, args, requestId: requestId() });
       })(), this.readTimeoutMs);
     } catch (error) {
-      return { ok: false, reason: error.message === "timed out" ? `${ready.partner.label} did not answer in time.` : `${ready.partner.label}: ${error.message}` };
+      // A failure to reach the partner, not a refusal from it: the caller can stop asking.
+      return { ok: false, unreachable: true, reason: error.message === "timed out" ? `${ready.partner.label} did not answer in time.` : `${ready.partner.label}: ${error.message}` };
     } finally {
       client.dispose();
     }

@@ -17,15 +17,46 @@ function fits(item, diet) {
 }
 
 /**
+ * Find what makes a vendor's menu unusable for the search. A menu is a vendor's data, so
+ * every field the search relies on is checked before it is used.
+ *
+ * :param catalog: The vendor's menu.
+ * :return: "" when it is usable, or the reason.
+ */
+export function validateCatalog(catalog) {
+  if (!catalog || typeof catalog !== "object") {
+    return "no menu";
+  }
+  if (!Number.isInteger(catalog.slotMinutes) || catalog.slotMinutes < 5 || catalog.slotMinutes > 240) {
+    return "its order interval is not a whole number of minutes from 5 to 240";
+  }
+  if (Number.isNaN(minutes(catalog.hours?.from)) || Number.isNaN(minutes(catalog.hours?.to))) {
+    return "its opening hours are not times";
+  }
+  if (!Array.isArray(catalog.items) || !catalog.items.length || catalog.items.length > 200) {
+    return "it lists no items";
+  }
+  for (const item of catalog.items) {
+    if (!item || typeof item.id !== "string" || !Number.isInteger(item.priceCents) || item.priceCents < 1
+      || !Number.isInteger(item.serves) || item.serves < 1 || item.serves > 1000
+      || !Array.isArray(item.diets) || item.diets.some((diet) => typeof diet !== "string")) {
+      return `an item is not a priced dish with servings and diets (${String(item?.id).slice(0, 40)})`;
+    }
+  }
+  return "";
+}
+
+/**
  * The cheapest basket from one catalog that meets a need.
  *
- * Diet needs are filled first, the most restrictive first (vegan, gluten-free,
- * vegetarian), each with the cheapest item per serving that fits; then the rest of the
- * servings with the cheapest item per serving of all.
+ * Each diet group is separate people (see mandate.js), so each is fed with its own
+ * servings: vegans with the cheapest vegan dish per serving, gluten-free people with
+ * the cheapest gluten-free dish, vegetarians with the cheapest vegetarian or vegan dish;
+ * then everyone else with the cheapest dish of all.
  *
  * :param catalog: The vendor's catalog.
- * :param need: {servings, vegetarian, vegan, glutenFree}; vegetarian counts every
- *     serving that must be vegetarian, vegans included.
+ * :param need: {servings, vegetarian, vegan, glutenFree}: the headcount, and the
+ *     people in each separate group.
  * :return: [{id, qty}], or null when the vendor has nothing for a needed diet.
  */
 export function buildBasket(catalog, need) {
@@ -35,24 +66,22 @@ export function buildBasket(catalog, need) {
   const add = (item, count) => {
     qty.set(item.id, (qty.get(item.id) || 0) + count);
     have.servings += item.serves * count;
-    for (const diet of DIET_ORDER) {
-      if (fits(item, diet)) {
-        have[diet] += item.serves * count;
-      }
-    }
   };
+  let fed = 0;
   for (const diet of DIET_ORDER) {
-    const missing = (need[diet] || 0) - have[diet];
-    if (missing <= 0) {
+    const people = need[diet] || 0;
+    if (people <= 0) {
       continue;
     }
     const item = cheapest(catalog.items.filter((candidate) => fits(candidate, diet)));
     if (!item) {
       return null;
     }
-    add(item, Math.ceil(missing / item.serves));
+    // Leftover servings of this dish still feed the people with no diet below.
+    add(item, Math.ceil(people / item.serves));
+    fed += people;
   }
-  const rest = (need.servings || 0) - have.servings;
+  const rest = (need.servings || 0) - Math.max(fed, 0) - Math.max(have.servings - fed, 0);
   if (rest > 0) {
     const item = cheapest(catalog.items);
     add(item, Math.ceil(rest / item.serves));
@@ -95,23 +124,42 @@ function slotTimes(catalog, mandate) {
  * :param getCatalog: (id) -> Promise of the catalog or {ok:false, reason}.
  * :param quote: (id, {date, time, fulfilment, items}) -> Promise of the vendor's quote.
  * :param maxQuotes: The most quotes to ask for.
- * :return: {plans, best, closest, baseline, failures, quotesUsed, capped}. A plan is
- *     {orders:[{vendor, time, fulfilment, items, quote}], check}.
+ * :return: {plans, catalogs, notes, best, closest, baseline, failures, quotesUsed, capped}.
+ *     A plan is {orders:[{vendor, time, fulfilment, items, quote}], check}. notes give
+ *     each vendor's first reason it could not take part; failures name vendors that did
+ *     not answer or sent a menu that cannot be read.
  */
 export async function searchPlans({ vendors, mandate, getCatalog, quote, maxQuotes = 60 }) {
   const catalogs = {};
   const failures = [];
+  // Per vendor, the first reason it could not take part: shown when no plan fits.
+  const notes = new Map();
+  const note = (vendor, reason) => {
+    if (!notes.has(vendor)) {
+      notes.set(vendor, String(reason).slice(0, 300));
+    }
+  };
   for (const id of vendors) {
     const catalog = await getCatalog(id);
-    if (!catalog || catalog.ok === false || !Array.isArray(catalog.items)) {
-      failures.push({ vendor: id, reason: String(catalog?.reason || `${id} sent no menu.`) });
+    if (!catalog || catalog.ok === false) {
+      failures.push({ vendor: id, reason: String(catalog?.reason || `${id} sent no menu.`).slice(0, 300) });
+      continue;
+    }
+    const problem = validateCatalog(catalog);
+    if (problem) {
+      failures.push({ vendor: id, reason: `${id} sent a menu Quorum cannot read: ${problem}.` });
     } else {
       catalogs[id] = catalog;
     }
   }
   const ids = Object.keys(catalogs);
   const fulfilments = mandate.pickupAllowed ? ["delivery", "pickup"] : ["delivery"];
-  const fullNeed = { servings: mandate.headcount, vegetarian: mandate.vegetarian + mandate.vegan, vegan: mandate.vegan, glutenFree: mandate.glutenFree };
+  const fullNeed = { servings: mandate.headcount, vegetarian: mandate.vegetarian, vegan: mandate.vegan, glutenFree: mandate.glutenFree };
+  for (const id of ids) {
+    if (!slotTimes(catalogs[id], mandate).length) {
+      note(id, `${id} has no order time between ${clock(minutes(mandate.from) - mandate.flexMinutes)} and ${clock(minutes(mandate.to) + mandate.flexMinutes)}.`);
+    }
+  }
   const dietNeed = { ...fullNeed, servings: 0 };
 
   // Candidate plans, each a list of parts {vendor, items}, ranked by list price.
@@ -120,6 +168,8 @@ export async function searchPlans({ vendors, mandate, getCatalog, quote, maxQuot
     const items = buildBasket(catalogs[id], fullNeed);
     if (items) {
       shapes.push([{ vendor: id, items }]);
+    } else {
+      note(id, `${id} has no dish for one of the diets, so it can only feed the others in a split order.`);
     }
   }
   for (const a of ids) {
@@ -127,7 +177,8 @@ export async function searchPlans({ vendors, mandate, getCatalog, quote, maxQuot
     if (!dietItems || !dietItems.length) {
       continue;
     }
-    const left = mandate.headcount - servingsOf(catalogs[a], dietItems);
+    const left = mandate.headcount - mandate.vegetarian - mandate.vegan - mandate.glutenFree
+      - Math.max(0, servingsOf(catalogs[a], dietItems) - mandate.vegetarian - mandate.vegan - mandate.glutenFree);
     for (const b of ids) {
       if (b === a || left <= 0) {
         continue;
@@ -167,20 +218,31 @@ export async function searchPlans({ vendors, mandate, getCatalog, quote, maxQuot
     return cache.get(key);
   };
   const plans = [];
+  const gone = new Set();
   for (const candidate of candidates) {
+    if (candidate.parts.some((part) => gone.has(part.vendor))) {
+      continue;
+    }
     const orders = [];
     let complete = true;
     for (const part of candidate.parts) {
       const args = { date: mandate.date, time: candidate.time, fulfilment: candidate.fulfilment, items: part.items };
       const answer = await ask(part.vendor, args);
-      if (!answer || answer.ok === false) {
+      if (answer?.unreachable) {
+        // The vendor stopped answering: name it once, and ask it nothing more.
+        gone.add(part.vendor);
+        failures.push({ vendor: part.vendor, reason: String(answer.reason).slice(0, 300) });
+      } else if (answer && answer.ok === false) {
+        note(part.vendor, answer.reason);
+      }
+      if (!answer || answer.ok !== true) {
         complete = false;
         break;
       }
       orders.push({ vendor: part.vendor, time: candidate.time, fulfilment: candidate.fulfilment, items: part.items, quote: answer });
     }
     if (complete) {
-      plans.push({ orders, check: checkPlan({ orders }, mandate) });
+      plans.push({ orders, check: checkPlan({ orders }, mandate, catalogs) });
     }
     if (capped) {
       break;
@@ -190,8 +252,13 @@ export async function searchPlans({ vendors, mandate, getCatalog, quote, maxQuot
   const passing = plans.filter((plan) => plan.check.ok);
   const closest = passing.length ? null
     : [...plans].sort((a, b) => a.check.problems.length - b.check.problems.length || a.check.totalCents - b.check.totalCents)[0] || null;
+  for (const vendor of gone) {
+    notes.delete(vendor);
+  }
   return {
     plans,
+    catalogs,
+    notes: [...notes].map(([vendor, reason]) => ({ vendor, reason })),
     best: passing[0] || null,
     closest,
     baseline: passing.find((plan) => plan.orders.length === 1) || null,

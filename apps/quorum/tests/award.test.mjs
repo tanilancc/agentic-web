@@ -35,3 +35,33 @@ test("bad saved data gives an empty award", () => {
   assert.deepEqual(Award.fromJSON(null).list(), []);
   assert.deepEqual(Award.fromJSON({ orders: [{ vendor: 5 }] }).list(), []);
 });
+
+test("orders still planned when the page closed were never sent, and say so", () => {
+  const award = new Award();
+  award.start([order("a"), order("b")], "2026-12-10");
+  award.update(0, { status: "booking" });
+  const again = Award.fromJSON(JSON.parse(JSON.stringify(award)));
+  assert.deepEqual(again.list().map((o) => o.status), ["unknown", "declined"]);
+  assert.match(again.list()[1].reason, /not sent/i);
+});
+
+test("an award is finished when nothing is waiting or being sent", () => {
+  const award = new Award();
+  award.start([order("a"), order("b")], "2026-12-10");
+  assert.equal(award.finished(), false);
+  award.update(0, { status: "booked" });
+  award.update(1, { status: "booking" });
+  assert.equal(award.finished(), false);
+  award.update(1, { status: "unknown" });
+  assert.equal(award.finished(), true);
+  award.stopRemaining();
+  assert.equal(new Award().finished(), true);
+});
+
+test("stopping marks every order not yet sent as declined", () => {
+  const award = new Award();
+  award.start([order("a"), order("b"), order("c")], "2026-12-10");
+  award.update(0, { status: "booked" });
+  award.stopRemaining();
+  assert.deepEqual(award.list().map((o) => o.status), ["booked", "declined", "declined"]);
+});

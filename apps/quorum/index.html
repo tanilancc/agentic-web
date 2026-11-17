@@ -26,15 +26,16 @@
         <form id="mandate-form" class="mandate-form">
           <label>Day <input name="date" type="date"></label>
           <label>People <input name="headcount" type="number" min="1" max="500"></label>
-          <label>Vegetarian <input name="vegetarian" type="number" min="0"></label>
+          <label>Vegetarian (not vegan) <input name="vegetarian" type="number" min="0"></label>
           <label>Vegan <input name="vegan" type="number" min="0"></label>
-          <label>Gluten-free <input name="glutenFree" type="number" min="0"></label>
+          <label>Gluten-free (not veg.) <input name="glutenFree" type="number" min="0"></label>
           <label>Budget ($) <input name="budget" type="number" min="1" step="1"></label>
           <label>From <input name="from" type="time" step="1800"></label>
           <label>To <input name="to" type="time" step="1800"></label>
           <label>Flexibility (min) <input name="flexMinutes" type="number" min="0" max="180" step="15"></label>
           <label class="check"><input name="pickupAllowed" type="checkbox"> Pickup is fine</label>
         </form>
+        <p class="note">Each diet group is separate people, and each person gets one suitable serving. Count someone with two needs once, in the stricter group.</p>
         <ul id="mandate-problems" aria-live="polite"></ul>
       </section>
 
@@ -51,7 +52,10 @@
     </div>
 
     <section class="panel results" aria-labelledby="plans-title">
-      <h2 id="plans-title">Plans and orders</h2>
+      <div class="panel-head">
+        <h2 id="plans-title">Plans and orders</h2>
+        <button id="new-award" class="quiet" type="button">Start a new order</button>
+      </div>
       <div id="plans" aria-live="polite"></div>
     </section>
 

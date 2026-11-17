@@ -168,7 +168,7 @@ test("place_award refuses an unknown plan number, an incomplete card, and a seco
   await ok.run("place_award", { plan: best });
   const again = await ok.run("place_award", { plan: best });
   assert.equal(again.ok, false);
-  assert.match(again.reason, /already/);
+  assert.match(again.reason, /Start a new order on the page/);
 });
 
 test("a vendor that refuses leaves the other orders standing, and its text never carries the card", async () => {
@@ -196,7 +196,8 @@ test("an abort stops before the next vendor, and the desk gets the signal", asyn
   const out = await run("place_award", { plan: found.best.plan }, { requestId: "t", signal: controller.signal });
   assert.equal(desk.calls.filter((c) => c[0] === "commit").length, 1);
   assert.equal(desk.calls.find((c) => c[0] === "commit")[4], controller.signal);
-  assert.deepEqual(state.award.list().map((o) => o.status), ["booked", "planned"]);
+  assert.deepEqual(state.award.list().map((o) => o.status), ["booked", "declined"]);
+  assert.match(state.award.list()[1].reason, /not sent/i);
   assert.match(out.stopped, /stopped/i);
 });
 
@@ -208,4 +209,51 @@ test("no tool result ever holds the card", async () => {
   for (const secret of SECRETS) {
     assert.ok(!text.includes(secret), secret);
   }
+});
+
+// --- Review fixes ----------------------------------------------------------------------
+
+test("changing the mandate drops the old search, so its plans can no longer be placed", async () => {
+  const { run, state } = setup();
+  const found = await run("find_best_plan", {});
+  assert.equal((await run("set_mandate", { headcount: 45 })).ok, true);
+  assert.equal(state.search, null);
+  const out = await run("place_award", { plan: found.best.plan });
+  assert.equal(out.ok, false);
+  assert.match(out.reason, /Run find_best_plan/);
+});
+
+test("after a finished award, a new one is possible once the visitor starts one on the page", async () => {
+  const { run, state } = setup();
+  const best = (await run("find_best_plan", {})).best.plan;
+  await run("place_award", { plan: best });
+  assert.equal(state.award.finished(), true);
+  assert.equal((await run("place_award", { plan: best })).ok, false);
+  state.award = new Award();
+  const out = await run("place_award", { plan: best });
+  assert.ok(out.orders.every((o) => o.status === "booked"));
+});
+
+test("when nothing fits, find_best_plan gives each vendor's reason", async () => {
+  const { run } = setup({ mandate: { ...MANDATE, from: "06:00", to: "07:00", flexMinutes: 0 } });
+  const out = await run("find_best_plan", {});
+  assert.equal(out.best, null);
+  assert.equal(out.notes.length, 3);
+});
+
+test("check_plan counts each diet group as separate people, from the vendors' menus", async () => {
+  const { run } = setup({ mandate: { ...MANDATE, headcount: 12, vegetarian: 6, vegan: 0, glutenFree: 6, budgetCents: 100000 } });
+  // Twelve servings of a dish that is both gluten-free and vegetarian would feed both
+  // groups; two gluten-free platters are 12 servings: enough only if each counts once.
+  const ordersJson = JSON.stringify([{ vendor: "harbour_bakehouse", time: "17:00", fulfilment: "delivery", items: [{ id: "gf-platter", qty: 1 }, { id: "classic-platter", qty: 1 }] }]);
+  const out = await run("check_plan", { ordersJson });
+  assert.equal(out.ok, false);
+  assert.match(out.problems.join(" "), /nothing suitable|short/);
+});
+
+test("set_mandate's limits match what the mandate accepts", () => {
+  const { entries } = setup();
+  const props = entries.find((e) => e.name === "set_mandate").inputSchema.properties;
+  assert.equal(props.headcount.maximum, 500);
+  assert.equal(props.flexMinutes.maximum, 180);
 });

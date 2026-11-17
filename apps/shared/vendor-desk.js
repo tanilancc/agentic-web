@@ -42,11 +42,21 @@ export class SavedOrders {
     }
   }
 
+  /**
+   * Save the orders.
+   *
+   * :return: True when they were saved. The vendor's storage is its only record of an
+   *     order, so an order that could not be saved was not placed.
+   */
   static save(storage, vendorId, orders) {
+    if (!storage) {
+      return false;
+    }
     try {
-      storage?.setItem(SavedOrders.key(vendorId), JSON.stringify(orders));
+      storage.setItem(SavedOrders.key(vendorId), JSON.stringify(orders));
+      return true;
     } catch {
-      // Storage full or blocked: the order is still returned to the visitor.
+      return false;
     }
   }
 }
@@ -149,7 +159,9 @@ export function vendorActions({ catalog, callers, storage = SavedOrders.defaultS
           code, placedAt: now(), order: orderTerms(args), totalCents: priced.totalCents,
           contact: { firstName: args.firstName, lastName: args.lastName, email: args.email, phone: args.phone },
         });
-        SavedOrders.save(storage, catalog.id, orders);
+        if (!SavedOrders.save(storage, catalog.id, orders)) {
+          return { ok: false, reason: `${catalog.name} could not record the order. Nothing was ordered.` };
+        }
         return { ok: true, code, totalCents: priced.totalCents };
       },
     },

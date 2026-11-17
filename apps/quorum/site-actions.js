@@ -6,7 +6,7 @@
 // reads it at ordering time and sends it only to each vendor's own window.
 
 import { checkPlan, validateMandate } from "./js/mandate.js";
-import { searchPlans } from "./js/search.js";
+import { searchPlans, validateCatalog } from "./js/search.js";
 import { VENDORS } from "./js/vendors.js";
 import { safeOutcome } from "./shared/partner-desk.js";
 
@@ -14,14 +14,14 @@ const VENDOR_IDS = VENDORS.map((vendor) => vendor.id);
 const CARD_FIELDS = { firstName: "first name", lastName: "last name", email: "email", phone: "phone" };
 const MANDATE_FIELDS = {
   date: { type: "string", format: "date", description: "The day, YYYY-MM-DD." },
-  headcount: { type: "integer", minimum: 0, maximum: 1000, description: "People to feed." },
-  vegetarian: { type: "integer", minimum: 0, maximum: 1000, description: "Vegetarians who are not vegan." },
-  vegan: { type: "integer", minimum: 0, maximum: 1000, description: "Vegans." },
-  glutenFree: { type: "integer", minimum: 0, maximum: 1000, description: "People who need gluten-free food." },
+  headcount: { type: "integer", minimum: 0, maximum: 500, description: "People to feed." },
+  vegetarian: { type: "integer", minimum: 0, maximum: 500, description: "Vegetarians who are not vegan. Diet groups are separate people." },
+  vegan: { type: "integer", minimum: 0, maximum: 500, description: "Vegans." },
+  glutenFree: { type: "integer", minimum: 0, maximum: 500, description: "People who need gluten-free food and are not vegetarian or vegan." },
   budgetCents: { type: "integer", minimum: 0, maximum: 100000000, description: "The most to spend, in cents: $500.00 is 50000." },
   from: { type: "string", maxLength: 5, description: "Start of the delivery window, HH:MM." },
   to: { type: "string", maxLength: 5, description: "End of the delivery window, HH:MM." },
-  flexMinutes: { type: "integer", minimum: 0, maximum: 1000, description: "How many minutes either side of the window are fine." },
+  flexMinutes: { type: "integer", minimum: 0, maximum: 180, description: "How many minutes either side of the window are fine." },
   pickupAllowed: { type: "boolean", description: "Whether someone can collect an order." },
 };
 
@@ -104,6 +104,8 @@ export class QuorumActions {
       name: "find_best_plan",
       description: "Search every vendor's quotes for the mandate, across times, delivery or pickup, and one-vendor or split orders, and show the result on the page. Returns the best plan that meets the mandate, the cheapest single-vendor plan, two alternatives, or the closest plan and why it fails. Each plan has a number for place_award.",
       effect: "write",
+      // A vendor that stops answering costs one 15 s wait, then is skipped.
+      timeoutMs: 300000,
       inputSchema: { type: "object", additionalProperties: false, properties: {} },
       execute: QuorumActions.findBestPlan,
     });
@@ -139,6 +141,8 @@ export class QuorumActions {
       return { ok: false, problems };
     }
     setMandate(next);
+    // Plans found for the old rules are no longer worth anything.
+    QuorumActions.page().setSearch(null);
     save();
     return { ok: true, mandate: next };
   }
@@ -188,6 +192,7 @@ export class QuorumActions {
       baseline: QuorumActions.summary(search.baseline, index(search.baseline)),
       alternatives: alternatives.map((plan) => QuorumActions.summary(plan, index(plan))),
       closest: QuorumActions.summary(search.closest, index(search.closest)),
+      notes: search.best ? [] : search.notes,
       failures: search.failures,
       quotesUsed: search.quotesUsed,
       capped: search.capped,
@@ -202,9 +207,18 @@ export class QuorumActions {
     }
     const mandate = getMandate();
     const orders = [];
+    const catalogs = {};
     for (const order of parsed) {
       if (!VENDOR_IDS.includes(order?.vendor)) {
         return { ok: false, reason: `No vendor named ${String(order?.vendor)}.` };
+      }
+      if (!catalogs[order.vendor]) {
+        const catalog = await desk.read(order.vendor, "get_catalog", {});
+        const problem = catalog?.ok === false ? catalog.reason : validateCatalog(catalog);
+        if (problem) {
+          return { ok: false, reason: `${order.vendor}: ${String(problem).slice(0, 200)}` };
+        }
+        catalogs[order.vendor] = catalog;
       }
       const terms = { date: mandate.date, time: order.time, fulfilment: order.fulfilment, items: order.items };
       const answer = await desk.read(order.vendor, "request_quote", terms);
@@ -213,7 +227,7 @@ export class QuorumActions {
       }
       orders.push({ ...order, quote: answer });
     }
-    return checkPlan({ orders }, mandate);
+    return checkPlan({ orders }, mandate, catalogs);
   }
 
   static missing(card) {
@@ -228,13 +242,17 @@ export class QuorumActions {
     }
     const mandate = getMandate();
     // The checker decides, again, against the mandate as it is now.
-    const check = checkPlan({ orders: plan.orders }, mandate);
+    const check = checkPlan({ orders: plan.orders }, mandate, getSearch().catalogs);
     if (!check.ok) {
       return { ok: false, reason: `Plan ${args.plan} does not meet the mandate: ${check.problems.join(" ")}` };
     }
     const current = award();
-    if (current.active()) {
-      return { ok: false, reason: "An award is already being placed or placed. Its orders stand; change or cancel them with each vendor." };
+    if (current.list().length && !current.finished()) {
+      return { ok: false, reason: "An award is already being placed." };
+    }
+    if (current.list().length) {
+      // Only the visitor starts a new order, on the page: a model cannot order twice.
+      return { ok: false, reason: "The last order's results stand. Start a new order on the page first if the visitor wants another." };
     }
     const contact = card();
     const missing = QuorumActions.missing(contact);
@@ -248,7 +266,9 @@ export class QuorumActions {
     const results = [];
     for (const [index, order] of current.list().entries()) {
       if (signal?.aborted) {
-        return { orders: results, stopped: "Ordering was stopped. The orders not listed here are still planned and were not sent." };
+        current.stopRemaining();
+        save();
+        return { orders: results, stopped: "Ordering was stopped. The orders not listed here were not sent." };
       }
       // Saved before anything is sent, so a reload or a retry can never send it again.
       current.update(index, { status: "booking" });

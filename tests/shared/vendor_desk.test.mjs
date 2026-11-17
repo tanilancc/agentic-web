@@ -96,3 +96,15 @@ test("each vendor's catalog is valid and the three differ as designed", () => {
   assert.ok(BAKEHOUSE.pickup.discountPct > 0);
   assert.ok(BAKEHOUSE.minOrderCents > LITTLE_OVEN.minOrderCents);
 });
+
+test("an order the vendor cannot record is refused, never reported as placed", async () => {
+  const storage = { getItem: () => null, setItem: () => { throw new Error("QuotaExceededError"); } };
+  const registry = new ActionRegistry();
+  vendorActions({ catalog: LITTLE_OVEN, callers: CALLERS, storage, now: () => NOW })
+    .forEach((d) => registry.register({ base: "http://127.0.0.1:8095/partner-desk", network: "x" }, d));
+  const entries = [...registry.entries.values()];
+  const q = await entries.find((e) => e.name === "request_quote").execute(terms());
+  const out = await entries.find((e) => e.name === "place_order").execute({ ...terms(), ...CONTACT, expectedTotalCents: q.totalCents });
+  assert.equal(out.ok, false);
+  assert.match(out.reason, /could not record the order\. Nothing was ordered/);
+});

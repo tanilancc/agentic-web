@@ -83,8 +83,9 @@ export class PlanView {
    *
    * :param search: The last search, or null.
    * :param award: The award's orders.
+   * :param mandateChanged: True when the mandate changed since the last search.
    */
-  show(search, award) {
+  show(search, award, { mandateChanged = false } = {}) {
     const doc = this.doc;
     const parts = [];
     if (award.length) {
@@ -109,7 +110,9 @@ export class PlanView {
       parts.push(orders);
     }
     if (!search) {
-      if (!award.length) {
+      if (mandateChanged) {
+        parts.push(el(doc, "p", "empty", "The mandate changed. Ask the assistant to find the best plan again."));
+      } else if (!award.length) {
         parts.push(el(doc, "p", "empty", "Set the mandate, then ask the assistant to find the best plan."));
       }
       this.root.replaceChildren(...parts);
@@ -129,6 +132,13 @@ export class PlanView {
       grid.append(el(doc, "p", "empty", "No vendor could quote for this mandate."));
     }
     parts.push(grid);
+    if (!search.best && search.notes?.length) {
+      const why = el(doc, "ul", "search-why");
+      for (const item of search.notes) {
+        why.append(el(doc, "li", "", `${label(item.vendor)}: ${item.reason}`));
+      }
+      parts.push(why);
+    }
     const notes = [];
     for (const failure of search.failures) {
       notes.push(`${label(failure.vendor)} did not answer: ${failure.reason}`);

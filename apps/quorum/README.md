@@ -15,28 +15,38 @@ Quorum therefore does not stage a bluffing game between chat agents. It negotiat
 way a careful buyer does: by asking every vendor for binding quotes under different
 terms, and keeping the best that meets the rules.
 
-1. **Mandate.** Day, headcount, vegetarians, vegans, gluten-free, budget, delivery
-   window and flexibility, pickup allowed or not. Nonsense (0 people, more diets than
-   people, a window that ends before it starts) is refused with the field and reason.
+1. **Mandate.** Day, headcount, vegetarians (not vegan), vegans, gluten-free (not
+   vegetarian or vegan), budget, delivery window and flexibility, pickup allowed or not.
+   The diet groups are separate people; someone with two needs is counted once, in the
+   stricter group. Nonsense (0 people, more diets than people, a window that ends before
+   it starts) is refused with the field and reason.
 2. **Baskets.** For each vendor, the cheapest food per serving that covers the diets,
    most restrictive first, then the rest of the headcount.
 3. **Search** (`js/search.js`). One-vendor plans and two-vendor splits (one vendor covers
    the diets, the other the rest), at every order time each vendor can do inside the
    window and its flexibility, with delivery and, if allowed, pickup. Each candidate is
    quoted by the vendors themselves, cheapest-looking first, at most 60 quotes.
-4. **Checker** (`js/mandate.js`). The only thing that may call a plan acceptable:
-   servings, each diet, budget, time and pickup, each problem with numbers.
+4. **Checker** (`js/mandate.js`). The only thing that may call a plan acceptable. It
+   counts servings itself from the vendors' menus (a quote is trusted only for its
+   price), and checks with a small assignment that every person gets one serving that
+   suits them: one dish never feeds two diet groups. Then budget, time and pickup, each
+   problem with numbers.
 5. **Result.** The best plan beside the best single-vendor plan, and the saving. If
-   nothing fits, the closest plan and exactly why.
+   nothing fits, the closest plan and each vendor's own reason (no order time in the
+   window, not enough notice, under its minimum). Vendor menus are checked when they
+   arrive; a vendor with a menu Quorum cannot read, or that stops answering mid-search,
+   is named and skipped. Changing the mandate drops the old plans.
 6. **Award.** The visitor confirms the orders here, then each vendor opens its own
    window and confirms its order there. Each order ends ordered (with the vendor's
    reference), refused (with its reason, such as a changed price), declined, or unknown;
-   an unknown order is never sent again.
+   an unknown order is never sent again, and orders not yet sent when ordering stops are
+   marked as not sent. Once an order is finished, only the visitor can start a new one,
+   with the page's "Start a new order" button.
 
 Example, with the three demo vendors: 30 people, 6 vegetarian, 3 vegan, 4 gluten-free,
 $800, 17:00 to 18:00 give or take 30 minutes. The best plan is Green Fork at 16:30 (its
 off-peak discount) for the vegan and gluten-free food, plus Little Oven for the rest:
-$162.11, $42.69 less than the best single vendor.
+$176.78, $28.02 less than the best single vendor.
 
 ## Tools the assistant has
 
@@ -84,6 +94,7 @@ Root directory `apps/quorum`, no build command. Then put the vendors' https orig
 - Prices are public code, so this is open negotiation over binding quotes, not sealed
   bids. Private floors and sealed bids would need a trusted arbiter service.
 - Every part of a split arrives at the same time; at most two vendors per plan.
+- Someone with two diet needs (a gluten-free vegan) is counted once, in one group.
 - Baskets favour the cheapest food per serving, not variety.
 - Orders are placed one vendor at a time; if one is refused, the others still stand.
 - No payments. The vendors are demo sites.

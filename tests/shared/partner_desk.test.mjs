@@ -88,7 +88,7 @@ test("invalid arguments are refused before anything is sent", async () => {
 test("a read that never answers ends with a reason", async () => {
   const { d } = desk({ script: { search_rooms: "hang" }, readTimeoutMs: 30 });
   const out = await d.read("guesthouse", "search_rooms", { guests: 2 });
-  assert.deepEqual(out, { ok: false, reason: "Tidewhistle Guesthouse did not answer in time." });
+  assert.deepEqual(out, { ok: false, unreachable: true, reason: "Tidewhistle Guesthouse did not answer in time." });
 });
 
 test("a booking runs in the partner's own window and returns its code", async () => {
@@ -152,4 +152,11 @@ test("an abort before the window opens sends nothing", async () => {
   const out = await d.commit("guesthouse", "place_booking", { guests: 2 }, { signal: controller.signal });
   assert.equal(out.status, "declined");
   assert.equal(log.executes.length, 0);
+});
+
+test("a read that fails in transport is marked unreachable; a vendor's refusal is not", async () => {
+  const slow = desk({ script: { search_rooms: "hang" }, readTimeoutMs: 30 });
+  assert.equal((await slow.d.read("guesthouse", "search_rooms", { guests: 2 })).unreachable, true);
+  const refusing = desk({ script: { search_rooms: () => ({ ok: false, reason: "Full." }) } });
+  assert.equal((await refusing.d.read("guesthouse", "search_rooms", { guests: 2 })).unreachable, undefined);
 });

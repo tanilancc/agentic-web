@@ -49,6 +49,27 @@ export class Award {
     return this.orders.some((order) => !["refused", "declined"].includes(order.status));
   }
 
+  /**
+   * Whether nothing is waiting or being sent: every order has its final state.
+   */
+  finished() {
+    return this.orders.every((order) => !["planned", "booking"].includes(order.status));
+  }
+
+  /**
+   * Mark every order not yet sent as declined, when ordering stops.
+   *
+   * :param reason: Why it was not sent.
+   */
+  stopRemaining(reason = "Not sent: ordering was stopped before this order.") {
+    for (const order of this.orders) {
+      if (order.status === "planned") {
+        order.status = "declined";
+        order.reason = reason;
+      }
+    }
+  }
+
   toJSON() {
     return { date: this.date, orders: this.orders };
   }
@@ -68,6 +89,7 @@ export class Award {
         order.reason = "The page closed while this order was being sent, so it may have been placed. Check with the vendor before ordering again.";
       }
     }
+    award.stopRemaining("Not sent: the page closed before this order was sent.");
     return award;
   }
 }

@@ -39,6 +39,7 @@ export function defaultMandate(today = new Date()) {
 export class QuorumApp {
   static MANDATE_KEY = "quorum-mandate-v1";
   static AWARD_KEY = "quorum-award-v1";
+  static PAST_KEY = "quorum-past-awards-v1";
 
   /**
    * :param doc: The document, with #mandate-form, #mandate-problems, #plans and #contact-card.
@@ -55,6 +56,7 @@ export class QuorumApp {
     }
     this.award = Award.fromJSON(this.load(QuorumApp.AWARD_KEY, null));
     this.search = null;
+    this.mandateChanged = false;
     this.view = new PlanView(doc.getElementById("plans"), doc);
     this.contact = new ContactCard(doc.getElementById("contact-card"), store);
     this.form = doc.getElementById("mandate-form");
@@ -68,6 +70,7 @@ export class QuorumApp {
       validate: validateData,
     });
     this.fillForm();
+    doc.getElementById("new-award")?.addEventListener("click", () => this.newAward());
     this.form?.addEventListener("change", () => this.readForm());
     this.form?.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -140,14 +143,47 @@ export class QuorumApp {
       return item;
     }));
     if (!problems.length) {
-      this.mandate = next;
+      this.setMandate(next);
       this.save();
     }
     return problems;
   }
 
+  /**
+   * Change the mandate. Plans found for the old rules are dropped, never shown as best.
+   */
+  setMandate(next) {
+    if (JSON.stringify(next) !== JSON.stringify(this.mandate)) {
+      this.search = null;
+      this.mandateChanged = true;
+    }
+    this.mandate = next;
+  }
+
+  /**
+   * Start a new order, once the last one is finished. Only the visitor can do this, with
+   * the page's button: the assistant cannot order twice. The finished order is kept.
+   *
+   * :return: True when a new order was started.
+   */
+  newAward() {
+    if (!this.award.list().length || !this.award.finished()) {
+      return false;
+    }
+    const past = this.load(QuorumApp.PAST_KEY, []);
+    past.push(this.award.toJSON());
+    try {
+      this.store?.setItem(QuorumApp.PAST_KEY, JSON.stringify(Array.isArray(past) ? past.slice(-20) : [this.award.toJSON()]));
+    } catch {
+      // Storage blocked: the visitor still starts again.
+    }
+    this.award = new Award();
+    this.save();
+    return true;
+  }
+
   render() {
-    this.view.show(this.search, this.award.list());
+    this.view.show(this.search, this.award.list(), { mandateChanged: this.mandateChanged });
   }
 
   /**
@@ -157,9 +193,14 @@ export class QuorumApp {
     return {
       desk: this.desk,
       getMandate: () => ({ ...this.mandate }),
-      setMandate: (m) => { this.mandate = m; },
+      setMandate: (m) => this.setMandate(m),
       getSearch: () => this.search,
-      setSearch: (s) => { this.search = s; },
+      setSearch: (s) => {
+        this.search = s;
+        if (s) {
+          this.mandateChanged = false;
+        }
+      },
       award: () => this.award,
       card: () => this.contact.card(),
       save: () => this.save(),
@@ -177,12 +218,12 @@ export class QuorumApp {
     if (!plan) {
       return { refusal: `No plan ${planIndex}. Run find_best_plan first.` };
     }
-    const check = checkPlan({ orders: plan.orders }, this.mandate);
+    const check = checkPlan({ orders: plan.orders }, this.mandate, this.search.catalogs || {});
     if (!check.ok) {
       return { refusal: `Plan ${planIndex} does not meet the mandate: ${check.problems.join(" ")}` };
     }
-    if (this.award.active()) {
-      return { refusal: "An award is already being placed or placed." };
+    if (this.award.list().length) {
+      return { refusal: "The last order's results stand. Start a new order on the page first." };
     }
     const card = this.contact.card();
     const missing = ["firstName", "lastName", "email", "phone"].filter((name) => !String(card[name] || "").trim());
