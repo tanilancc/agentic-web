@@ -1,6 +1,7 @@
 import { Calendar } from "./calendar.js";
 import { GuesthouseData } from "./guesthouse-data.js";
 import { PriceCalculator } from "./price-calculator.js";
+import { SavedBookings } from "./saved-bookings.js";
 import { StayRules } from "./stay-rules.js";
 
 /**
@@ -13,9 +14,13 @@ import { StayRules } from "./stay-rules.js";
  */
 export class ReservationBook {
   /**
-   * Create the book with the existing bookings, dated from today.
+   * Create the book with the existing bookings, dated from today, and any bookings
+   * saved in the browser.
+   *
+   * :param storage: Where bookings are kept: localStorage by default, or none in Node.
    */
-  constructor() {
+  constructor(storage = SavedBookings.defaultStorage()) {
+    this.storage = storage;
     this.bookings = [];
     for (const existing of GuesthouseData.EXISTING_BOOKINGS) {
       const checkIn = Calendar.addDays(Calendar.today(), existing.daysFromToday);
@@ -32,6 +37,7 @@ export class ReservationBook {
       };
       this.bookings.push(ReservationBook.record(existing.code, stay, guest));
     }
+    SavedBookings.merge(this.bookings, SavedBookings.load(this.storage));
   }
 
   /**
@@ -158,6 +164,7 @@ export class ReservationBook {
     // Store the copies, so later changes to the caller's objects can't alter the booking.
     const booking = ReservationBook.record(this.newCode(), checked.stay, checked.guest);
     this.bookings.push(booking);
+    SavedBookings.save(this.storage, this.bookings);
     return { booking };
   }
 
@@ -243,6 +250,7 @@ export class ReservationBook {
     if (found.errors) return found;
     found.booking.status = "cancelled";
     found.booking.cancellationFee = found.cancellation.fee;
+    SavedBookings.save(this.storage, this.bookings);
     return found;
   }
 

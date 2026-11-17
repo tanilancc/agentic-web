@@ -1,3 +1,4 @@
+import { SavedReservations } from "./saved-reservations.js";
 import { Calendar } from "./calendar.js";
 import { FareCalculator } from "./fare-calculator.js";
 import { TourData } from "./tour-data.js";
@@ -22,7 +23,8 @@ export class TripBook {
   /**
    * Create the book with the existing reservations, dated from today.
    */
-  constructor() {
+  constructor(storage = SavedReservations.defaultStorage()) {
+    this.storage = storage;
     this.reservations = [];
     for (const existing of TourData.EXISTING_RESERVATIONS) {
       const trips = [];
@@ -35,6 +37,7 @@ export class TripBook {
       // The seeds have names only, so the other contact details are empty.
       this.reservations.push(TripBook.record(existing.code, trips, TripRules.cleanContact(existing)));
     }
+    SavedReservations.merge(this.reservations, SavedReservations.load(this.storage));
   }
 
   /**
@@ -172,6 +175,7 @@ export class TripBook {
     if (Object.keys(errors).length > 0) return { errors };
     const reservation = TripBook.record(this.newCode(), trips, TripRules.cleanContact(contact));
     this.reservations.push(reservation);
+    SavedReservations.save(this.storage, this.reservations);
     return { reservation };
   }
 
@@ -331,6 +335,7 @@ export class TripBook {
     if (found.errors) return found;
     found.reservation.status = "cancelled";
     found.cancelBy = null;
+    SavedReservations.save(this.storage, this.reservations);
     return found;
   }
 
