@@ -232,7 +232,7 @@ Their READMEs show how to serve both on two host names.
   their binding quotes to find the best plan within the group's rules, and places the
   orders the visitor approves with [the market's vendors](apps/market/README.md).
 
-Live, each with its own two-agent network (bring your own key in the assistant's settings):
+Live, each with its own two-agent network (bring your own key in the assistant's settings). **New here? Read the [user guide](docs/USER_GUIDE.md).**
 
 | Site | Address | Agents |
 | --- | --- | --- |
