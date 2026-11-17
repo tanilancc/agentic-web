@@ -54,17 +54,44 @@ async function withTimeout(start, timeoutMs) {
 /**
  * Read a response's text, refusing one over the size limit.
  *
+ * It reads the body as a stream and counts bytes, so a body with no Content-Length is
+ * stopped as soon as it passes the limit, instead of being buffered whole first.
+ *
  * :param response: The Response.
- * :param maxBytes: The size limit.
+ * :param maxBytes: The size limit in bytes.
  * :return: The text, or null when the body is too large.
  */
 async function limitedText(response, maxBytes) {
   const declared = Number(response.headers.get("content-length") || 0);
   if (declared > maxBytes) {
+    await response.body?.cancel().catch(() => {});
     return null;
   }
-  const text = await response.text();
-  return text.length > maxBytes ? null : text;
+  if (!response.body) {
+    return "";
+  }
+  const reader = response.body.getReader();
+  const chunks = [];
+  let size = 0;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) {
+      break;
+    }
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel().catch(() => {});
+      return null;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 /**
@@ -178,24 +205,43 @@ export class BrowserReader {
    */
   async read(url) {
     const read = emptyRead(url);
-    let response;
     try {
-      response = await withTimeout((signal) => this.fetchImpl(url, {
-        mode: "cors", credentials: "omit", redirect: "follow", cache: "no-store", signal,
-      }), this.timeoutMs);
+      // One time limit covers the request and the whole body: a server that sends
+      // headers and then stalls must not hold the page.
+      return await withTimeout((signal) => this.fetchAndRead(url, read, signal), this.timeoutMs);
     } catch (error) {
       if (error.message === "timed out") {
         read.error = "timed out";
         return read;
       }
+      if (read.status) {
+        // The response arrived and then its body failed.
+        read.error = "unreachable";
+        return read;
+      }
       read.error = await this.reachable(url) ? "blocked by CORS" : "unreachable";
       return read;
     }
+  }
+
+  /**
+   * Fetch a file and read its body, filling in the FileRead.
+   *
+   * :param url: The file's URL.
+   * :param read: The FileRead to fill in.
+   * :param signal: The AbortSignal for the time limit.
+   * :return: The FileRead.
+   */
+  async fetchAndRead(url, read, signal) {
+    const response = await this.fetchImpl(url, {
+      mode: "cors", credentials: "omit", redirect: "follow", cache: "no-store", signal,
+    });
     read.status = response.status;
     read.corsReadable = true;
     read.redirectedTo = response.url && response.url !== url ? response.url : "";
     if (!response.ok) {
       read.error = `HTTP ${response.status}`;
+      await response.body?.cancel().catch(() => {});
       return read;
     }
     const text = await limitedText(response, this.maxBytes);

@@ -167,3 +167,43 @@ test("the browser reader sends no credentials", async () => {
   assert.equal(read.corsReadable, true);
   assert.equal(seen[0].credentials, "omit");
 });
+
+/**
+ * A response whose body sends one chunk and then nothing more.
+ */
+function stalledBody() {
+  return new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode("{")); } }));
+}
+
+/**
+ * A response whose body never ends, with no Content-Length.
+ */
+function endlessBody() {
+  const chunk = new TextEncoder().encode("x".repeat(4096));
+  return new Response(new ReadableStream({ pull(controller) { controller.enqueue(chunk); } }));
+}
+
+for (const [name, Reader] of [["browser", BrowserReader], ["Node", NodeReader]]) {
+  test(`the ${name} reader times out when the body stalls after the headers`, async () => {
+    const reader = new Reader({ fetchImpl: async () => stalledBody(), timeoutMs: 50 });
+    const started = Date.now();
+    const read = await reader.read("https://x.example/agent-manifest.json");
+    assert.equal(read.error, "timed out");
+    assert.ok(Date.now() - started < 2000);
+  });
+
+  test(`the ${name} reader stops an endless body at the size limit`, async () => {
+    const reader = new Reader({ fetchImpl: async () => endlessBody(), maxBytes: 100000, timeoutMs: 5000 });
+    const read = await reader.read("https://x.example/agent-manifest.json");
+    assert.equal(read.error, "larger than 1 MB");
+    assert.equal(read.text, "");
+  });
+
+  test(`the ${name} reader counts bytes, not characters`, async () => {
+    // 600 three-byte characters: 1800 bytes, but only 600 characters.
+    const reader = new Reader({ fetchImpl: async () => new Response("€".repeat(600)), maxBytes: 1000 });
+    assert.equal((await reader.read("https://x.example/a.json")).error, "larger than 1 MB");
+    const fits = new Reader({ fetchImpl: async () => new Response("€".repeat(300)), maxBytes: 1000 });
+    assert.equal((await fits.read("https://x.example/a.json")).text, "€".repeat(300));
+  });
+}
