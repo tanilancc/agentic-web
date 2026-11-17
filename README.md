@@ -228,6 +228,9 @@ Their READMEs show how to serve both on two host names.
 - [Town Concierge](apps/concierge/README.md): plans a trip across independent businesses
   with live prices from each, and books every part on the site that runs it, through
   the [town's partner desks](apps/town/README.md).
+- [Quorum](apps/quorum/README.md): orders food for a group from several vendors, using
+  their binding quotes to find the best plan within the group's rules, and places the
+  orders the visitor approves with [the market's vendors](apps/market/README.md).
 
 ## Infrastructure
 
