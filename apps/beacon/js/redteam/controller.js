@@ -75,7 +75,7 @@ export class RedTeamController {
   async run(view, report, settings, model) {
     try {
       const snapshot = await this.readSnapshotImpl(report.input);
-      if (!snapshot.manifest || !snapshot.networkConfig) {
+      if (!snapshot.manifest || !snapshot.networkConfig || !snapshot.networkName) {
         view.showError("Beacon could not read the site's files again, so nothing was run.");
         return;
       }
@@ -85,7 +85,8 @@ export class RedTeamController {
       let done = 0;
       const progress = () => view.showProgress(++done, total);
       view.showProgress(0, total);
-      const options = { targetUrl: report.input, routerOrigin, canary, onProgress: progress };
+      // The network the inspection found, even when the visitor typed a bare site address.
+      const options = { targetUrl: `${snapshot.base}/${snapshot.networkName}`, routerOrigin, canary, onProgress: progress };
       const observations = await this.runImpl(options, DEFAULT_PROBES, DEFAULT_TRIALS);
       const grounding = await this.runImpl({ ...options, canary: newCanary() }, GROUNDING_PROBES, 1);
       const auditor = await this.auditorImpl();

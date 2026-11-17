@@ -158,6 +158,17 @@ export class ReportView {
   }
 
   /**
+   * The network URL a report found: the base and the network name, even when the
+   * visitor typed a bare site address.
+   *
+   * :param report: The Report.
+   * :return: The network URL.
+   */
+  static networkUrl(report) {
+    return report.base && report.networkName ? `${report.base}/${report.networkName}` : report.input;
+  }
+
+  /**
    * Build the Try it tab.
    *
    * :param report: The Report.
@@ -169,7 +180,7 @@ export class ReportView {
     }
     return [
       el(this.doc, "p", { className: "panel-note", text: `Run the agents published by ${hostOf(report.input)} here, in your browser, on your own key. You are asked again before anything is loaded.` }),
-      el(this.doc, "a", { className: "try-link button", text: "Try this agent", attrs: { href: `try.html?site=${encodeURIComponent(report.input)}` } }),
+      el(this.doc, "a", { className: "try-link button", text: "Try this agent", attrs: { href: `try.html?site=${encodeURIComponent(ReportView.networkUrl(report))}` } }),
     ];
   }
 }

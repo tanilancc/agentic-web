@@ -123,6 +123,9 @@ test("the tabs switch panels, and Try it is off for a site that is not conforman
   assert.equal(tabs[1].getAttribute("aria-selected"), "true");
   const link = root.querySelector(".try-link");
   assert.equal(link.getAttribute("href"), "try.html?site=https%3A%2F%2Fsite.example%2Fnet");
+  // A report for a bare site address links to the network it found.
+  view.show(sampleReport({ input: "https://site.example/", base: "https://site.example", networkName: "net" }));
+  assert.equal(root.querySelector(".try-link").getAttribute("href"), "try.html?site=https%3A%2F%2Fsite.example%2Fnet");
   view.show(sampleReport({ level: "not-conformant" }));
   assert.equal(root.querySelector(".try-link"), null);
   assert.match(root.querySelector(".panel-tryit").textContent, /not conformant/i);

@@ -264,3 +264,50 @@ test("the harness never runs a second turn on the same engine", async () => {
 });
 
 const PARTNER_CONFIG = JSON.parse(await (await import("node:fs/promises")).readFile(path.join(PARTNER, "marrow_point_harbor_tours.network.json"), "utf8"));
+
+test("a run whose target never loaded reports not applicable, never Passed", async () => {
+  const router = new ScriptRouter(KEY, benign);
+  const web = new ExampleWeb(router, new URL(ROUTER).origin, KEY);
+  web.serve(BEACON, BEACON_DIR);
+  web.serve(TARGET, PARTNER);
+  const canary = newCanary();
+  web.install();
+  const recorder = new FetchRecorder(globalThis);
+  recorder.install();
+  let observations;
+  try {
+    // A bare site address names no network: the runtime cannot load it as a peer.
+    observations = await new RedTeamRun({
+      engineFactory: () => new Engine({ originUrl: `${BEACON}/canary`, byokKey: KEY, routerOverride: ROUTER }),
+      recorder, targetUrl: TARGET, routerOrigin: new URL(ROUTER).origin, canary,
+    }).run([DEFAULT_PROBES[0]], 1);
+  } finally {
+    recorder.restore();
+    web.restore();
+  }
+  assert.equal(observations[0].error, "");
+  const findings = findingsFrom(observations, { targetOrigin: TARGET, routerOrigin: new URL(ROUTER).origin, beaconOrigin: BEACON, declaredPeers: [], canary });
+  for (const item of findings) {
+    assert.equal(item.status, "na", item.id);
+    assert.match(item.evidence, /never reached the site/);
+  }
+});
+
+test("runs that did not reach the site are counted and named", () => {
+  const canary = newCanary();
+  const reached = { probe: "p", trial: 1, answer: "", error: "", consents: [], requests: [], honeypot: { offered: true, proposed: false },
+    traceEvents: [{ kind: "remote_call", phase: "start", requestPayload: {} }, { kind: "remote_call", phase: "end", status: "ok" }] };
+  const missed = { ...reached, trial: 2, traceEvents: [{ kind: "remote_call", phase: "end", status: "error" }] };
+  const f = findingsFrom([reached, missed], { targetOrigin: TARGET, routerOrigin: new URL(ROUTER).origin, beaconOrigin: BEACON, declaredPeers: [], canary });
+  assert.equal(finding(f, "rt.honeypot").status, "pass");
+  assert.match(finding(f, "rt.honeypot").evidence, /1 of 2 runs reached the site/);
+});
+
+test("the honeypot finding is not applicable when the honeypot was never offered", () => {
+  const canary = newCanary();
+  const run = { probe: "p", trial: 1, answer: "", error: "", consents: [], requests: [], honeypot: { offered: false, proposed: false },
+    traceEvents: [{ kind: "remote_call", phase: "end", status: "ok" }] };
+  const f = findingsFrom([run], { targetOrigin: TARGET, routerOrigin: new URL(ROUTER).origin, beaconOrigin: BEACON, declaredPeers: [], canary });
+  assert.equal(finding(f, "rt.honeypot").status, "na");
+  assert.equal(finding(f, "rt.key-destination").status, "pass");
+});

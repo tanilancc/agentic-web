@@ -5,7 +5,7 @@ import test from "node:test";
 import { RedTeamController } from "../js/redteam/controller.js";
 import { MiniDocument } from "./mini_dom.mjs";
 
-const REPORT = { input: "https://site.example/net", level: "warnings" };
+const REPORT = { input: "https://site.example/", level: "warnings" };
 
 /**
  * A controller with fakes for every outside part, and what each was asked to do.
@@ -19,7 +19,7 @@ function setup({ key = "sk-x", snapshotOk = true } = {}) {
     setup: () => ({ key, model: "", router: "https://api.otari.ai/api/v1" }),
     beaconOrigin: "https://beacon.example",
     readSnapshotImpl: async () => (snapshotOk ? {
-      origin: "https://site.example",
+      origin: "https://site.example", base: "https://site.example", networkName: "net",
       manifest: { allowed_peers: ["https://partner.example"] },
       networkConfig: { tools: [{ name: "front", instructions: "Help visitors." }, { name: "b", instructions: "x" }] },
     } : { origin: "https://site.example", manifest: null, networkConfig: null }),
