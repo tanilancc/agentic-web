@@ -35,3 +35,29 @@ test("Beacon's worker serves its page, public files and headers, and nothing els
   assert.equal((await get("/nope")).status, 404);
   assert.equal((await get("/", "POST")).status, 405);
 });
+
+test("an unknown address gets the site's own Page not found page, with a 404 status", async () => {
+  const worker = await load(PROJECTS.concierge.dir);
+  const response = await worker.fetch(new Request("https://oaw-concierge.pages.dev/no/such/page"));
+  assert.equal(response.status, 404);
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  assert.match(response.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  const html = await response.text();
+  assert.match(html, /Page not found/);
+  assert.match(html, /href="\/"/, "The page links home with an address that works from any depth.");
+  assert.match(html, /script-src 'self'/);
+  const head = await worker.fetch(new Request("https://oaw-concierge.pages.dev/missing", { method: "HEAD" }));
+  assert.equal(head.status, 404);
+  assert.equal(await head.text(), "");
+});
+
+test("a failure inside the worker returns a short error page that reveals nothing", async () => {
+  const worker = await load(PROJECTS.concierge.dir);
+  const broken = { method: "GET", get url() { throw new Error("secret detail /srv/worker.js:12"); } };
+  const response = await worker.fetch(broken);
+  assert.equal(response.status, 500);
+  const html = await response.text();
+  assert.match(html, /Something went wrong/);
+  assert.doesNotMatch(html, /secret detail|worker\.js|Error/);
+});

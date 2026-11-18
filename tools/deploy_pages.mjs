@@ -105,8 +105,27 @@ export async function buildWorker(folder) {
     return null;
   }
   
+  const BASE_HEADERS = { "X-Content-Type-Options": "nosniff", "Content-Security-Policy": "frame-ancestors 'none'" };
+  // Says nothing about the failure, so it cannot leak a path or a stack trace.
+  const FAILED_PAGE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Something went wrong</title></head><body style="font-family:system-ui,sans-serif;max-width:34rem;margin:15vh auto;padding:0 16px"><h1>Something went wrong</h1><p>This page could not be served. Please try again in a moment.</p><p><a href="/">Go to the home page</a></p></body></html>';
+
+  function notFound(method) {
+    const page = FILES["/shared/404.html"];
+    const headers = new Headers({ ...BASE_HEADERS, "Content-Type": page ? page[0] : "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    return new Response(method === "HEAD" ? null : page ? body(page) : "Not found", { status: 404, headers });
+  }
+
   export default {
     async fetch(request) {
+      try {
+        return serve(request);
+      } catch {
+        return new Response(FAILED_PAGE, { status: 500, headers: { ...BASE_HEADERS, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+      }
+    },
+  };
+
+  function serve(request) {
       const url = new URL(request.url);
       if (request.method !== "GET" && request.method !== "HEAD") {
         return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
@@ -119,7 +138,7 @@ export async function buildWorker(folder) {
       }
       const found = find(pathname);
       if (!found) {
-        return new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+        return notFound(request.method);
       }
       if (found.endsWith("/index.html") && !pathname.endsWith("/") && !pathname.endsWith("index.html")) {
         return Response.redirect(url.origin + pathname + "/" + url.search, 308);
@@ -131,8 +150,7 @@ export async function buildWorker(folder) {
         }
       }
       return new Response(request.method === "HEAD" ? null : body(FILES[found]), { status: 200, headers });
-    },
-  };
+  }
   `;
   return { source, count: Object.keys(files).length };
 }

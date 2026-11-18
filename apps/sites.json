@@ -6,7 +6,8 @@
       "port": 8090,
       "openAs": "localhost",
       "shared": [
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -15,7 +16,8 @@
       "port": 8080,
       "openAs": "127.0.0.1",
       "shared": [
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -24,7 +26,8 @@
       "port": 8081,
       "openAs": "localhost",
       "shared": [
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -36,7 +39,8 @@
         "partner-desk.js",
         "contact-card.js",
         "site-origin.js",
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -48,7 +52,8 @@
         "vendor-pricing.js",
         "vendor-desk.js",
         "vendor-page.js",
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -60,7 +65,8 @@
         "vendor-pricing.js",
         "vendor-desk.js",
         "vendor-page.js",
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -72,7 +78,8 @@
         "vendor-pricing.js",
         "vendor-desk.js",
         "vendor-page.js",
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     },
     {
@@ -85,7 +92,8 @@
         "contact-card.js",
         "vendor-pricing.js",
         "site-origin.js",
-        "privacy.html"
+        "privacy.html",
+        "404.html"
       ]
     }
   ]
