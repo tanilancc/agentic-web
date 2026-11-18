@@ -223,5 +223,6 @@ a card, and it receives only the message shown on that card, never your key, you
 or your contact details. Bookings and orders are confirmed by you, twice: in the site's
 dialog, and in the business's own window.
 
-The full **Privacy and terms** page is linked at the bottom of every site, for example
+The full **Privacy and terms** page, which names each AI provider and links to its privacy
+policy, is linked at the bottom of every site, for example
 https://oaw-concierge.pages.dev/shared/privacy.html.
