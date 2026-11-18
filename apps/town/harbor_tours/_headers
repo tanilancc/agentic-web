@@ -1,5 +1,13 @@
 # Cloudflare Pages (and Netlify) headers. Public agent files are readable from any site.
 # bridge/ and partner-desk/ are left framable on purpose: other sites load them in a frame.
+# The pages carry their Content-Security-Policy in a meta tag, which cannot set
+# frame-ancestors, so the header does.
+/
+  Content-Security-Policy: frame-ancestors 'none'
+/index.html
+  Content-Security-Policy: frame-ancestors 'none'
+/policies.html
+  Content-Security-Policy: frame-ancestors 'none'
 /agent-manifest.json
   Access-Control-Allow-Origin: *
 /marrow_point_harbor_tours.network.json
