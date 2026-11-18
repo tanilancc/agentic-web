@@ -1,0 +1,22 @@
+# Runs every Node test, and checks that each site's runtime copy matches the skill's.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Runtime copies match the source
+        run: node tools/sync_runtime.mjs --check
+      - name: Node tests
+        run: node --test "apps/**/tests/*.test.mjs" "tests/**/*.test.mjs"

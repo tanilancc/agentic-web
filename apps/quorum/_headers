@@ -1,0 +1,20 @@
+# Cloudflare Pages (and Netlify) headers for Quorum. The page carries its
+# Content-Security-Policy in a meta tag, which cannot set frame-ancestors.
+/
+  Content-Security-Policy: frame-ancestors 'none'
+/index.html
+  Content-Security-Policy: frame-ancestors 'none'
+/agent-manifest.json
+  Access-Control-Allow-Origin: *
+/quorum_procurement.network.json
+  Access-Control-Allow-Origin: *
+/links.json
+  Access-Control-Allow-Origin: *
+/agent-mcp.json
+  Access-Control-Allow-Origin: *
+/.well-known/nsdeploy.json
+  Access-Control-Allow-Origin: *
+/.well-known/nsdeploy-agent.json
+  Access-Control-Allow-Origin: *
+/runtime/sandbox-worker.js
+  Content-Security-Policy: default-src 'none'; script-src blob:; connect-src 'none'; worker-src 'none'

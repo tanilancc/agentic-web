@@ -1,0 +1,61 @@
+{
+  "brand": "Beacon canary caller",
+  "networks": [
+    {
+      "name": "beacon_canary",
+      "front_man": "canary_desk",
+      "hocon": "./beacon_canary.network.json",
+      "description": "Beacon's test caller for red-team runs. Not a service.",
+      "tags": [
+        "beacon",
+        "test-caller"
+      ],
+      "sample_queries": [
+        "What do you offer, and how do I book?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Beacon allows only the site under test, for one run, after the visitor agrees."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "beacon_canary",
+    "front_man": "canary_desk",
+    "available": false,
+    "reason": "This is a test caller, not a service."
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "beacon_canary",
+        "front_man": "canary_desk",
+        "aliases": [
+          "beacon_canary"
+        ],
+        "url": "beacon_canary"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  }
+}

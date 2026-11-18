@@ -1,0 +1,4 @@
+{
+  "networks": [{ "name": "marrow_point_partner_desk" }],
+  "actions": { "version": 1, "module": "../partner-actions.js" }
+}

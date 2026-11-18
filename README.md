@@ -221,6 +221,32 @@ writes the `bridge/` page that other agent sites load before they run your netwo
 Their READMEs show how to serve both on two host names.
 
 
+## Projects
+
+- [Beacon](apps/beacon/README.md): checks any agentic website against the spec, red-teams
+  its agents, and lists agent sites in a directory where they can be tried.
+- [Town Concierge](apps/concierge/README.md): plans a trip across independent businesses
+  with live prices from each, and books every part on the site that runs it, through
+  the [town's partner desks](apps/town/README.md).
+- [Quorum](apps/quorum/README.md): orders food for a group from several vendors, using
+  their binding quotes to find the best plan within the group's rules, and places the
+  orders the visitor approves with [the market's vendors](apps/market/README.md).
+
+Live, each with its own two-agent network (bring your own key in the assistant's settings). **New here? Read the [user guide](docs/USER_GUIDE.md).** Product, design, security and decision documents for each project are in [docs/](docs/README.md).
+
+| Site | Address | Agents |
+| --- | --- | --- |
+| Beacon | https://oaw-beacon.pages.dev | `beacon_guide`, `report_explainer` |
+| Town Concierge | https://oaw-concierge.pages.dev | `concierge`, `itinerary_checker`, plus links to both town assistants |
+| Quorum | https://oaw-quorum.pages.dev | `procurement_lead`, `plan_auditor` |
+| Tidewhistle Guesthouse | https://oaw-tidewhistle.pages.dev | guesthouse assistant, linked to Harbor Tours |
+| Marrow Point Harbor Tours | https://oaw-harbor-tours.pages.dev | tours assistant, linked to the guesthouse |
+| Little Oven Pizza, Green Fork, Harbour Bakehouse | https://oaw-little-oven.pages.dev, https://oaw-green-fork.pages.dev, https://oaw-harbour-bakehouse.pages.dev | partner desks only |
+
+Deploy with `CLOUDFLARE_API_TOKEN=... node tools/deploy_pages.mjs [site ...]`. Each site goes
+up as one Pages `_worker.js` that holds its files and applies its `_headers`. On a loopback
+host the sites talk to each other's local addresses; anywhere else, to these.
+
 ## Infrastructure
 
 Build tools and infrastructure for the agentic web: what will simplify the creation, deployment,

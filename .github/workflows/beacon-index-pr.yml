@@ -1,0 +1,24 @@
+# Checks the sites a pull request adds to Beacon's directory. A site that is not
+# conformant fails the check. It reads only the sites' public files.
+name: Beacon directory entry
+
+on:
+  pull_request:
+    paths:
+      - apps/beacon/index/sites.json
+
+permissions:
+  contents: read
+
+jobs:
+  check-entries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Inspect new and changed entries
+        run: node tools/beacon_recheck.mjs --only-changed "origin/${{ github.base_ref }}"

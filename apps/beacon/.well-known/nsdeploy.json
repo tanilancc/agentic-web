@@ -1,0 +1,18 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "beacon",
+      "front_man": "beacon_guide",
+      "aliases": [
+        "beacon",
+        "beacon_guide"
+      ],
+      "url": "beacon"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

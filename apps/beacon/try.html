@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; frame-src *; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>Beacon: try an agent site</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="./">
+      <svg class="wordmark-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+        <path d="M13 12h6l2 16H11z" fill="currentColor"/>
+        <rect x="12" y="6" width="8" height="5" rx="1" fill="var(--beam)"/>
+        <path d="M21 8.5 31 4v9zM11 8.5 1 4v9z" fill="var(--beam)" opacity=".45"/>
+      </svg>
+      <span>Beacon</span>
+    </a>
+    <p class="tagline">Try an agent site</p>
+  </header>
+
+  <section class="assistant try" aria-labelledby="try-heading">
+    <h1 id="try-heading">Try an agent site</h1>
+    <p class="assistant-note">The site's agents run in this browser, on the key and provider you choose below. Your messages go to that provider. Beacon passes each message to the site's assistant after you agree on a card. The site gets none of Beacon's tools, and you are asked before it contacts any other site.</p>
+    <p id="try-status" role="status">Starting…</p>
+    <div id="agent-app">
+      <div data-ns-slot="header"></div>
+      <div class="assistant-panels">
+        <div data-ns-slot="chat"></div>
+        <div data-ns-slot="agents"></div>
+      </div>
+      <div data-ns-slot="settings"></div>
+    </div>
+  </section>
+
+  <script type="module" src="js/try-main.js"></script>
+</body>
+</html>

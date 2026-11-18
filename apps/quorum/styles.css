@@ -1,0 +1,149 @@
+/* Quorum. One stylesheet, no third-party assets. */
+
+:root {
+  --paper: #f3f0e8;
+  --surface: #fffdf7;
+  --ink: #1d2a2f;
+  --ink-soft: #52616a;
+  --line: #d8d0bf;
+  --sea: #1b5e73;
+  --kelp: #2f6b4f;
+  --buoy: #c4452c;
+  --sand: #f6e7c4;
+  --radius: 10px;
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, ui-serif, Georgia, serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0f1a1f;
+    --surface: #17252c;
+    --ink: #ece6d8;
+    --ink-soft: #a7b3ba;
+    --line: #2c3c45;
+    --sea: #7fc3d8;
+    --kelp: #7fd1a7;
+    --buoy: #ff9a85;
+    --sand: #3b3220;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--body); }
+:focus-visible { outline: 3px solid var(--sea); outline-offset: 2px; }
+
+.masthead, .page { max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+.masthead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding-block: 18px 10px; border-bottom: 1px solid var(--line); }
+.wordmark { margin: 0; font: 600 1.35rem/1 var(--display); color: var(--sea); }
+.tagline { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+
+.intro { padding-block: 32px 20px; }
+.intro h1 { margin: 0 0 8px; font: 600 clamp(1.7rem, 4.5vw, 2.5rem)/1.12 var(--display); text-wrap: balance; }
+.intro p { margin: 0; max-width: 66ch; color: var(--ink-soft); }
+
+.columns { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+@media (max-width: 860px) { .columns { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.panel h2, .assistant h2 { margin: 0 0 8px; font: 600 1.25rem var(--display); }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.note { margin: 0 0 12px; color: var(--ink-soft); font-size: .9rem; }
+
+button.quiet { padding: 6px 12px; font: 600 .85rem var(--body); color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+
+.board-empty { margin: 0; color: var(--ink-soft); }
+.legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.leg {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-left: 4px solid var(--sea); border-radius: 8px;
+}
+.leg-flagged { border-left-color: var(--buoy); }
+.leg-when { grid-column: 1 / -1; font-size: .82rem; color: var(--ink-soft); }
+.leg-title { font-weight: 700; overflow-wrap: anywhere; }
+.leg-price { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.leg-partner { font-size: .88rem; color: var(--ink-soft); overflow-wrap: anywhere; }
+.leg-status { justify-self: end; font-size: .8rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.status-booked { color: var(--kelp); border-color: currentColor; }
+.status-refused, .status-unknown { color: var(--buoy); border-color: currentColor; }
+.leg-code, .leg-reason { grid-column: 1 / -1; font-size: .88rem; overflow-wrap: anywhere; }
+.leg-reason { color: var(--buoy); }
+.board-total { margin: 12px 0 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.conflicts { margin: 12px 0 0; padding: 10px 12px 10px 28px; background: var(--sand); border-radius: 8px; }
+.conflict { overflow-wrap: anywhere; }
+
+.card-form { display: grid; gap: 10px; }
+.card-form label { display: grid; gap: 4px; font-size: .9rem; font-weight: 600; }
+.card-form input { padding: 9px 11px; font: 1rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; }
+
+.assistant { padding-block: 32px 48px; }
+#assistant-status { color: var(--ink-soft); font-size: .92rem; }
+
+/* Assistant layout, from the agentify-website skill's template, in this site's palette.
+   The chat keeps a light surface in both colour schemes: the runtime's widgets assume one. */
+#agent-app {
+  color: #1d2a2f;
+  --ns-font: system-ui, sans-serif;
+  --ns-bg: #fffdf7;
+  --ns-fg: #1d2a2f;
+  --ns-primary: #1b5e73;
+  --ns-accent: #2f6b4f;
+  --ns-border: #d8d0bf;
+  --ns-panelbg: #fffdf7;
+  --ns-msgbg: #efe9dc;
+  --ns-muted: #52616a;
+}
+.assistant-panels { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; margin-top: 16px; }
+#agent-app.ns-composed-app [data-ns-slot="chat"] { height: 640px; }
+#agent-app .ns-chat { background: var(--ns-bg); }
+#agent-app input[type="checkbox"], #agent-app input[type="radio"] { width: auto; }
+#agent-app .ns-header { flex-wrap: wrap; }
+#agent-app button { margin: 0; }
+#agent-app .ns-w-choice { color: var(--ns-fg); }
+#agent-app .ns-consent { background: #fffbeb; }
+#agent-app .ns-msgs:has(.ns-consent-actions) > .ns-turn-status { display: none; }
+#agent-app .ns-msg { overflow-wrap: break-word; }
+#agent-app .ns-consent-actions { flex-wrap: wrap; }
+#agent-app .ns-consent-actions button { white-space: nowrap; }
+body > dialog { color: #1d2a2f; background: #fffdf7; }
+body > dialog h2 { margin: 0 0 12px; font: 700 1.25em system-ui, sans-serif; }
+body > dialog button { margin-right: 8px; }
+.assistant-review { max-width: 640px; width: 85%; max-height: 85vh; overflow: auto; border: 1px solid #888; border-radius: 12px; padding: 24px; font: 16px system-ui, sans-serif; }
+.assistant-review dl { display: grid; grid-template-columns: fit-content(40%) 1fr; gap: 4px 16px; margin: 12px 0; }
+.assistant-review dt { font-weight: 600; }
+.assistant-review dd { margin: 0; overflow-wrap: anywhere; }
+.assistant-review details { margin: 12px 0; }
+.assistant-review pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-review .assistant-decline { background: transparent; color: inherit; border: 1px solid currentColor; }
+@media (max-width: 760px) {
+  .assistant-panels { grid-template-columns: 1fr; }
+  .assistant-review dl { grid-template-columns: 1fr; gap: 0; }
+  .assistant-review dd { margin-bottom: 8px; }
+}
+
+.mandate-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.mandate-form label { display: grid; gap: 4px; font-size: .88rem; font-weight: 600; }
+.mandate-form input { padding: 8px 10px; font: 1rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.mandate-form label.check { grid-template-columns: auto 1fr; align-items: center; }
+#mandate-problems { margin: 10px 0 0; color: var(--buoy); }
+.plans { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.plan { padding: 14px 16px; border: 1px solid var(--line); border-top: 4px solid var(--sea); border-radius: 10px; background: var(--surface); }
+.plan-fails { border-top-color: var(--buoy); }
+.plan-title { margin: 0; font: 600 1rem var(--body); color: var(--ink-soft); }
+.plan-total { margin: 2px 0 6px; font: 700 1.6rem var(--display); font-variant-numeric: tabular-nums; }
+.plan-note { margin: 0 0 8px; color: var(--kelp); font-weight: 700; }
+.plan-orders, .award-orders, .search-notes, .plan-problems { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.plan-order, .award-order { display: grid; gap: 2px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.order-vendor { font-weight: 700; overflow-wrap: anywhere; }
+.order-items, .order-discounts, .award-reason { font-size: .9rem; overflow-wrap: anywhere; }
+.order-discounts { color: var(--kelp); }
+.order-total { font-variant-numeric: tabular-nums; }
+.plan-problems li, .award-reason { color: var(--buoy); }
+.search-notes { margin-top: 12px; color: var(--ink-soft); font-size: .88rem; }
+.award { margin-bottom: 16px; }
+.award h3 { margin: 0 0 8px; font: 600 1.1rem var(--display); }
+.award-status { font-weight: 700; }
+.status-booked .award-status { color: var(--kelp); }
+.status-refused .award-status, .status-unknown .award-status { color: var(--buoy); }
+.empty { margin: 0; color: var(--ink-soft); }

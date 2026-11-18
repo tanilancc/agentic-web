@@ -1,0 +1,18 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "marrow_point_concierge",
+      "front_man": "concierge",
+      "aliases": [
+        "marrow_point_concierge",
+        "concierge"
+      ],
+      "url": "marrow_point_concierge"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

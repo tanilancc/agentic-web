@@ -1,0 +1,100 @@
+{
+  "sites": [
+    {
+      "id": "beacon",
+      "dir": "apps/beacon",
+      "port": 8090,
+      "openAs": "localhost",
+      "shared": [
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "guesthouse",
+      "dir": "apps/town/guesthouse",
+      "port": 8080,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "harbor_tours",
+      "dir": "apps/town/harbor_tours",
+      "port": 8081,
+      "openAs": "localhost",
+      "shared": [
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "concierge",
+      "dir": "apps/concierge",
+      "port": 8093,
+      "openAs": "localhost",
+      "shared": [
+        "partner-desk.js",
+        "contact-card.js",
+        "site-origin.js",
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "little_oven",
+      "dir": "apps/market/little_oven",
+      "port": 8095,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js",
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "green_fork",
+      "dir": "apps/market/green_fork",
+      "port": 8096,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js",
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "harbour_bakehouse",
+      "dir": "apps/market/harbour_bakehouse",
+      "port": 8097,
+      "openAs": "127.0.0.1",
+      "shared": [
+        "vendor-pricing.js",
+        "vendor-desk.js",
+        "vendor-page.js",
+        "privacy.html",
+        "404.html"
+      ]
+    },
+    {
+      "id": "quorum",
+      "dir": "apps/quorum",
+      "port": 8094,
+      "openAs": "localhost",
+      "shared": [
+        "partner-desk.js",
+        "contact-card.js",
+        "vendor-pricing.js",
+        "site-origin.js",
+        "privacy.html",
+        "404.html"
+      ]
+    }
+  ]
+}

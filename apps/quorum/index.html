@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; frame-src *; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>Quorum: order food for a group</title>
+  <meta name="description" content="Give a headcount, diets, a budget and a time. Quorum gets binding quotes from several vendors, finds the best plan within your rules, and places the orders you approve.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <p class="wordmark">Quorum</p>
+    <p class="tagline">Group food orders, negotiated in the open</p>
+  </header>
+
+  <main class="page">
+    <section class="intro" aria-labelledby="intro-title">
+      <h1 id="intro-title">Feed the whole group, within your rules</h1>
+      <p>Set who is eating, any diets, your budget and when food should arrive. Quorum asks Little Oven Pizza, Green Fork and Harbour Bakehouse for binding quotes, tries times, pickup and split orders, and shows the best plan beside the best you could do with one vendor. Each vendor confirms its own order in its own window.</p>
+    </section>
+
+    <div class="columns">
+      <section class="panel" aria-labelledby="mandate-title">
+        <h2 id="mandate-title">Mandate</h2>
+        <form id="mandate-form" class="mandate-form">
+          <label>Day <input name="date" type="date"></label>
+          <label>People <input name="headcount" type="number" min="1" max="500"></label>
+          <label>Vegetarian (not vegan) <input name="vegetarian" type="number" min="0"></label>
+          <label>Vegan <input name="vegan" type="number" min="0"></label>
+          <label>Gluten-free (not veg.) <input name="glutenFree" type="number" min="0"></label>
+          <label>Budget ($) <input name="budget" type="number" min="1" step="1"></label>
+          <label>From <input name="from" type="time" step="1800"></label>
+          <label>To <input name="to" type="time" step="1800"></label>
+          <label>Flexibility (min) <input name="flexMinutes" type="number" min="0" max="180" step="15"></label>
+          <label class="check"><input name="pickupAllowed" type="checkbox"> Pickup is fine</label>
+        </form>
+        <p class="note">Each diet group is separate people, and each person gets one suitable serving. Count someone with two needs once, in the stricter group.</p>
+        <ul id="mandate-problems" aria-live="polite"></ul>
+      </section>
+
+      <section class="panel card" aria-labelledby="card-title">
+        <h2 id="card-title">Contact card</h2>
+        <p class="note">Stays in this browser. The assistant never sees it. It goes only to each vendor's order window, where you see it before you confirm.</p>
+        <form id="contact-card" class="card-form" autocomplete="on">
+          <label>First name <input name="firstName" autocomplete="given-name" maxlength="60"></label>
+          <label>Last name <input name="lastName" autocomplete="family-name" maxlength="60"></label>
+          <label>Email <input name="email" type="email" autocomplete="email" maxlength="120"></label>
+          <label>Phone <input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel results" aria-labelledby="plans-title">
+      <div class="panel-head">
+        <h2 id="plans-title">Plans and orders</h2>
+        <button id="new-award" class="quiet" type="button">Start a new order</button>
+      </div>
+      <div id="plans" aria-live="polite"></div>
+    </section>
+
+    <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+      <h2 id="assistant-heading">Ask Quorum</h2>
+      <p class="note">Your messages go to the AI provider you choose in the settings below. You are asked before each vendor is first contacted, and you confirm every order twice: here, and in the vendor's own window.</p>
+      <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load.</p>
+      <div id="agent-app">
+        <div data-ns-slot="header"></div>
+        <div class="assistant-panels">
+          <div data-ns-slot="chat"></div>
+          <div data-ns-slot="agents"></div>
+        </div>
+        <div data-ns-slot="settings"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page site-footer">
+    <p class="note">This is a demo with fictional businesses. <a href="shared/privacy.html">Privacy and terms</a></p>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="site.js"></script>
+</body>
+</html>

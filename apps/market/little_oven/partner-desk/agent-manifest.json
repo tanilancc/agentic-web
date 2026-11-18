@@ -1,0 +1,11 @@
+{
+  "networks": [
+    {
+      "name": "little_oven_partner_desk"
+    }
+  ],
+  "actions": {
+    "version": 1,
+    "module": "../partner-actions.js"
+  }
+}

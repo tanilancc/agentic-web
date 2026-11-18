@@ -1,0 +1,54 @@
+{
+  "brand": "Beacon auditor",
+  "networks": [
+    {
+      "name": "beacon_auditor",
+      "front_man": "auditor",
+      "hocon": "./beacon_auditor.network.json",
+      "description": "Beacon's auditor for red-team runs. Not a service.",
+      "tags": ["beacon", "auditor"],
+      "sample_queries": ["TASK: audit"]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "The auditor contacts no other site."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "beacon_auditor",
+    "front_man": "auditor",
+    "available": false,
+    "reason": "This is Beacon's auditor, not a service."
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "beacon_auditor",
+        "front_man": "auditor",
+        "aliases": ["beacon_auditor"],
+        "url": "beacon_auditor"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  }
+}

@@ -1,0 +1,16 @@
+:root { --ink: #1f2427; --soft: #59636a; --line: #ddd5c6; --paper: #faf7f0; --brand: #7a5223; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --ink: #ece7dc; --soft: #a9b2b8; --line: #34404a; --paper: #12181c; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.masthead, .page { max-width: 760px; margin-inline: auto; padding-inline: 16px; }
+.masthead { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding-block: 18px 10px; border-bottom: 3px solid var(--brand); }
+.wordmark { margin: 0; font: 700 1.4rem/1 Georgia, serif; color: var(--brand); }
+.tagline, .note, .empty { margin: 0; color: var(--soft); font-size: .92rem; }
+h1, h2 { font-family: Georgia, serif; margin: 24px 0 10px; }
+.menu, .rules, .orders { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.menu-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.menu-name { font-weight: 700; overflow-wrap: anywhere; }
+.menu-price { font-variant-numeric: tabular-nums; }
+.menu-meta { grid-column: 1 / -1; color: var(--soft); font-size: .9rem; }
+.rules li::before { content: "· "; color: var(--brand); }
+.order { padding: 10px 12px; border-left: 4px solid var(--brand); background: color-mix(in srgb, var(--brand) 8%, transparent); overflow-wrap: anywhere; }
