@@ -116,6 +116,11 @@ a { color: var(--sea); }
   grid-template-columns: minmax(0, 1fr) 320px;
   align-items: start;
   padding-bottom: 40px;
+  /* The report and directory fill in after the script and index load. Holding a full
+     screen for them keeps the assistant below the fold until then, so nothing on screen
+     jumps when they arrive (tests/beacon/chrome/run_layout_check.mjs). */
+  min-height: 100vh;
+  min-height: 100svh;
 }
 @media (max-width: 860px) {
   .workspace { grid-template-columns: minmax(0, 1fr); }
