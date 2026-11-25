@@ -17,7 +17,8 @@
       "openAs": "127.0.0.1",
       "shared": [
         "privacy.html",
-        "404.html"
+        "404.html",
+        "site-origin.js"
       ]
     },
     {
@@ -27,7 +28,8 @@
       "openAs": "localhost",
       "shared": [
         "privacy.html",
-        "404.html"
+        "404.html",
+        "site-origin.js"
       ]
     },
     {

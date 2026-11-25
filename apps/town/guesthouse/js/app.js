@@ -1,4 +1,5 @@
 import { BookingPage } from "./booking-page.js";
+import { useLocalLinks } from "../shared/site-origin.js";
 import { ReservationBook } from "./reservation-book.js";
 
 /**
@@ -19,6 +20,8 @@ export class App {
    */
   static start(doc) {
     const page = new BookingPage(doc, new ReservationBook());
+    // Links to the neighbor site go to its local copy during development.
+    useLocalLinks(doc);
     page.start();
     return page;
   }

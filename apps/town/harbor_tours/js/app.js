@@ -1,4 +1,5 @@
 import { ToursPage } from "./tours-page.js";
+import { useLocalLinks } from "../shared/site-origin.js";
 import { TripBasket } from "./trip-basket.js";
 import { TripBook } from "./trip-book.js";
 
@@ -22,6 +23,8 @@ export class App {
   static start(doc) {
     const book = new TripBook();
     const page = new ToursPage(doc, book, new TripBasket(book));
+    // Links to the neighbor site go to its local copy during development.
+    useLocalLinks(doc);
     page.start();
     return page;
   }
