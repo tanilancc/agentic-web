@@ -223,3 +223,11 @@ test("the network has two agents, and the front agent hands report questions to 
   assert.match(model.calls[1].messages[0].content, /report explainer/i);
   assert.equal(model.toolResults(2)[0].status, "succeeded");
 });
+
+test("an inspection is reported as checks only, never as advice about what the site offers", async () => {
+  const { network } = await load();
+  for (const agent of ["beacon_guide", "report_explainer"]) {
+    const instructions = network.getAgentSpec(agent).instructions;
+    assert.match(instructions, /Never say what an inspected site offers or suggest using it for anything/, agent);
+  }
+});
