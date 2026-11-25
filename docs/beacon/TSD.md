@@ -81,6 +81,8 @@ any site may read them.
   findings, and the network with a scripted model.
 - Browser check: `node tests/beacon/chrome/run_beacon_check.mjs`, with Playwright, a
   scripted router and a fake key.
+- Layout check: `node tests/beacon/chrome/run_layout_check.mjs`, which fails if the page
+  jumps while the report and directory load (layout shift of 0.1 or more).
 - Live check: `node tools/beacon_check.mjs https://oaw-beacon.pages.dev/beacon`.
 
 ## Deployment
