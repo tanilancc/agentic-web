@@ -26,7 +26,7 @@ const SKIP = new Set(["_headers", "_redirects", "_routes.json", "_worker.js", ".
 const TYPES = {
   html: "text/html; charset=utf-8", js: "text/javascript; charset=utf-8", mjs: "text/javascript; charset=utf-8",
   json: "application/json; charset=utf-8", css: "text/css; charset=utf-8", svg: "image/svg+xml", md: "text/markdown; charset=utf-8",
-  txt: "text/plain; charset=utf-8", hocon: "text/plain; charset=utf-8", png: "image/png", ico: "image/x-icon",
+  xml: "application/xml; charset=utf-8", txt: "text/plain; charset=utf-8", hocon: "text/plain; charset=utf-8", png: "image/png", ico: "image/x-icon",
 };
 
 async function walk(dir, out = []) {
