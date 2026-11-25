@@ -103,3 +103,12 @@ test("the network has two agents, and the plan auditor checks plans with the che
   assert.match(model.calls[1].messages[0].content, /plan auditor/i);
   assert.equal(model.toolResults(2)[0].result.ok, false);
 });
+
+test("any question whether an order or plan would work goes to the plan auditor, even for one vendor", async () => {
+  const { network } = await load();
+  const instructions = network.getAgentSpec("procurement_lead").instructions;
+  assert.match(instructions, /Whenever the visitor asks whether an order or plan would work, even one order from one vendor, ask plan_auditor/);
+  assert.match(instructions, /Never judge a plan yourself, even from a quote/);
+  assert.doesNotMatch(instructions, /For a "what if" about one vendor, call website_request_quote/, "This rule led a real model to judge a plan itself.");
+  assert.ok(instructions.length < 5000);
+});
