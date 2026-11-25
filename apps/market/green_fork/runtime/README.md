@@ -57,6 +57,8 @@ Edited files. Each one has a line near its top saying that it was changed:
   gets a plain sentence instead of the provider's JSON, which can hold account details.
   The new file `rate-limit.js` holds this logic. Free keys need it: Groq's free tier allows
   8,000 tokens a minute, which one turn with a delegating agent can exceed.
+- `cruse-render.js` shows `<br>` in a Markdown reply, such as inside a table cell, as a line
+  break. Models often write it. Every other HTML tag is still shown as plain text.
 - `execution-stream.js` and `turn-status.js` show "Waiting N s for your AI provider's rate
   limit…" in the chat while `llm.js` waits.
 

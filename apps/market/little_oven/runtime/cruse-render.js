@@ -1,5 +1,6 @@
 // Presentation renderers use DOM nodes and a small allowlist. Model output never
 // supplies executable code, SVG markup, network resources, or global CSS.
+// Changed by agentic-web. See README.md in this folder for what changed.
 export const PRESENTATION_CSS = `
 .ns-presentation{align-self:stretch;display:flex;flex-direction:column;gap:12px;min-width:0}
 .ns-presentation>.ns-widget{width:100%;max-width:100%}
@@ -32,7 +33,8 @@ function safeLink(value) {
 }
 
 function inline(el, text) {
-  const re = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[([^\]\n]+)\]\(([^\s)]+)\))/g;
+  // <br> alone is a line break: models put it in table cells. Other HTML stays text.
+  const re = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[([^\]\n]+)\]\(([^\s)]+)\)|<br\s*\/?>)/gi;
   let end = 0;
   for (const match of text.matchAll(re)) {
     el.append(document.createTextNode(text.slice(end, match.index)));
@@ -42,7 +44,8 @@ function inline(el, text) {
       const a = node(href ? "a" : "span", match[2]);
       if (href) { a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; }
       el.append(a);
-    } else if (token.startsWith("`")) el.append(node("code", token.slice(1, -1)));
+    } else if (token[0] === "<") el.append(node("br"));
+    else if (token.startsWith("`")) el.append(node("code", token.slice(1, -1)));
     else if (token.startsWith("**")) el.append(node("strong", token.slice(2, -2)));
     else el.append(node("em", token.slice(1, -1)));
     end = match.index + token.length;
