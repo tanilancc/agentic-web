@@ -108,3 +108,17 @@ test("the front agent hands the itinerary check to the checker, which reads the 
   assert.match(result.text, /empty/);
   assert.match(model.calls[1].messages[0].content, /itinerary checker/i);
 });
+
+test("the front agent is told which tool asks each business's own assistant", async () => {
+  const { network } = await load();
+  const { safeName } = await import("../runtime/runner.js");
+  const { parseExternalAgent } = await import("../runtime/kernel.js");
+  const front = network.getAgentSpec("concierge");
+  const instructions = front.instructions;
+  for (const url of front.tools.filter((t) => t.startsWith("https://"))) {
+    const tool = safeName(parseExternalAgent(url, "https://oaw-concierge.pages.dev").agentName);
+    assert.ok(instructions.includes(tool), `The instructions never name ${tool}, so a real model did not use it.`);
+  }
+  assert.match(instructions, /before saying you do not know/);
+  assert.ok(instructions.length < 5000, `Beacon's hygiene check warns over 5000 characters (${instructions.length}).`);
+});
