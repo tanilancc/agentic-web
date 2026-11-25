@@ -16,6 +16,10 @@
   color-scheme: light dark;
 }
 
+/* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
+   page. Override it here; never edit the copied runtime. */
+#agent-app .ns-hint.warn { color: #92400e; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #0f1a1f;
@@ -147,3 +151,7 @@ body > dialog button { margin-right: 8px; }
 .status-booked .award-status { color: var(--kelp); }
 .status-refused .award-status, .status-unknown .award-status { color: var(--buoy); }
 .empty { margin: 0; color: var(--ink-soft); }
+
+@media (prefers-color-scheme: dark) {
+  #agent-app .ns-hint.warn { color: #fbbf24; }
+}

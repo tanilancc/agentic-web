@@ -23,6 +23,10 @@
   color-scheme: light dark;
 }
 
+/* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
+   page. Override it here; never edit the copied runtime. */
+#agent-app .ns-hint.warn { color: #92400e; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #0d161d;
@@ -329,4 +333,8 @@ body > dialog button { margin-right: 8px; }
 .redteam-banner {
   margin: 0 0 14px; padding: 10px 12px;
   border-left: 4px solid var(--beam); background: var(--warn-bg); color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  #agent-app .ns-hint.warn { color: #fbbf24; }
 }

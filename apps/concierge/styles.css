@@ -16,6 +16,10 @@
   color-scheme: light dark;
 }
 
+/* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
+   page. Override it here; never edit the copied runtime. */
+#agent-app .ns-hint.warn { color: #92400e; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #0f1a1f;
@@ -120,4 +124,8 @@ body > dialog button { margin-right: 8px; }
   .assistant-panels { grid-template-columns: 1fr; }
   .assistant-review dl { grid-template-columns: 1fr; gap: 0; }
   .assistant-review dd { margin-bottom: 8px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  #agent-app .ns-hint.warn { color: #fbbf24; }
 }
