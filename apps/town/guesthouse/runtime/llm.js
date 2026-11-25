@@ -1,7 +1,9 @@
 // llm.js — the LlmClient intrinsic: an OpenAI-compatible chat-completions client.
+// Changed by agentic-web. See README.md in this folder for what changed.
 
 import { assertModelForRouter, normalizeModelName } from "./model.js";
 import { ProviderError } from "./provider-error.js";
+import { RateLimit } from "./rate-limit.js";
 
 function hostOf(url) {
   try { return new URL(url).host; } catch { return url || "?"; }
@@ -119,15 +121,26 @@ export class LlmClient {
       if (hostOf(this.baseUrl) === "api.anthropic.com") {
         headers["anthropic-dangerous-direct-browser-access"] = "true";
       }
-      const resp = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-        signal,
-      });
-      if (!resp.ok) {
+      let resp;
+      // A rate limit is waited out and the same request sent again (rate-limit.js).
+      for (let attempt = 0; ; attempt += 1) {
+        resp = await fetch(`${this.baseUrl}/chat/completions`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+          signal,
+        });
+        if (resp.ok) break;
         const txt = await resp.text().catch(() => "");
-        throw new Error(`LLM HTTP ${resp.status}: ${txt.slice(0, 300)}`);
+        const waitMs = RateLimit.waitMs(resp.status, resp.headers, txt);
+        if (waitMs === null) {
+          throw new Error(`LLM HTTP ${resp.status}: ${txt.slice(0, 300)}`);
+        }
+        if (attempt >= RateLimit.MAX_RETRIES || waitMs > RateLimit.MAX_WAIT_MS) {
+          throw RateLimit.error(hostOf(this.baseUrl), waitMs);
+        }
+        this.trace?.note("rate_limit_wait", { parent: span, origin, waitMs, attempt: attempt + 1, routerHost: hostOf(this.baseUrl) });
+        await RateLimit.sleep(waitMs, signal);
       }
 
       const routeKind = resp.headers.get("X-Nsdeploy-LLM-Route") || "";

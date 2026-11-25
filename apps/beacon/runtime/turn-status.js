@@ -1,4 +1,5 @@
 // turn-status.js — user-facing projection of detailed execution events.
+// Changed by agentic-web. See README.md in this folder for what changed.
 //
 // The trace and stream APIs retain every event for developer consumers. This
 // controller deliberately reduces them to one transient, non-technical status
@@ -25,6 +26,7 @@ export function statusTextForEvent(event) {
   const tool = humanize(event.tool?.name, "A service");
   switch (event.type) {
     case "turn.started": return "Planning your request…";
+    case "provider.waiting": return `Waiting ${Math.max(1, Math.ceil((event.waitMs || 0) / 1000))} s for your AI provider's rate limit…`;
     case "turn.steering.received": return "Update received; adjusting the plan…";
     case "turn.steering.applied": return "Applying your latest guidance…";
     case "agent.started": return `${agent} is working…`;

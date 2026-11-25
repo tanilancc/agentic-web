@@ -51,6 +51,14 @@ Edited files. Each one has a line near its top saying that it was changed:
   stray Enter cannot confirm an action. Closing the dialog puts focus back where it was.
 - `index.js` tells visitors that only actions that cannot be undone ask first, when the
   site offers `website_*` tools.
+- `llm.js` waits out a provider's rate limit. On HTTP 429, or a 503 that says when to come
+  back, it waits the time the provider asks for, up to 30 seconds, and sends the same
+  request again, up to twice. The visitor's Stop ends a wait at once. Otherwise the visitor
+  gets a plain sentence instead of the provider's JSON, which can hold account details.
+  The new file `rate-limit.js` holds this logic. Free keys need it: Groq's free tier allows
+  8,000 tokens a minute, which one turn with a delegating agent can exceed.
+- `execution-stream.js` and `turn-status.js` show "Waiting N s for your AI provider's rate
+  limit…" in the chat while `llm.js` waits.
 
 Protocol name: `nsdeploy`. Use it for `<protocol_name>` in `agent-manifest.json`. It
 names the discovery files, such as `.well-known/nsdeploy.json`, that nsdeploy's tools read.
