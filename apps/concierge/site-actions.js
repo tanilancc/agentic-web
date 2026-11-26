@@ -155,7 +155,15 @@ export class ConciergeActions {
     if (!quote || quote.ok === false) {
       return { ok: false, reason: String(quote?.reason || `${partner.label} did not quote it.`) };
     }
-    const id = plan.add({ partner: partner.id, ...partner.toLeg(quote), commit: { action: partner.commitAction, args: parsed } });
+    const leg = partner.toLeg(quote);
+    // The same stay or trip twice would be booked twice. A leg that was refused or
+    // declined can be planned again.
+    const same = plan.list().find((item) => item.partner === partner.id && item.title === leg.title && item.start === leg.start
+      && item.end === leg.end && !["refused", "declined"].includes(item.status));
+    if (same) {
+      return { ok: false, reason: `${leg.title} at that time is already in the plan as ${same.id}. Nothing was added.` };
+    }
+    const id = plan.add({ partner: partner.id, ...leg, commit: { action: partner.commitAction, args: parsed } });
     save();
     return { leg: ConciergeActions.view(plan.list().find((leg) => leg.id === id)), conflicts: plan.conflicts(now()).map((c) => c.message) };
   }

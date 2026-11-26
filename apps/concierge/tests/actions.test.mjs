@@ -262,3 +262,16 @@ test("a booked or uncertain leg cannot be removed, so its reference is never los
   }
   assert.equal(plan.list().length, 2);
 });
+
+test("plan_leg refuses a leg that is already in the plan, and adds it again once that leg was refused", async () => {
+  const { run, plan } = setup();
+  const first = await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  const again = await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  assert.equal(again.ok, false);
+  assert.match(again.reason, new RegExp(`already in the plan as ${first.leg.id}`));
+  assert.equal(plan.list().length, 1, "A real model added the same stay twice after a failed turn.");
+  plan.update(first.leg.id, { status: "refused", reason: "Price changed." });
+  const retry = await run("plan_leg", { partner: "guesthouse", argsJson: JSON.stringify(STAY) });
+  assert.equal(retry.ok, undefined);
+  assert.equal(plan.list().length, 2);
+});
