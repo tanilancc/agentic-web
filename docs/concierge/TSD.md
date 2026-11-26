@@ -76,6 +76,11 @@ refuses a mismatch.
   `itinerary_checker` after changes. It asks the guesthouse's or Harbor Tours' own
   assistant (link tools) questions their data does not answer, such as house rules or
   pets.
+- **The businesses' own assistants**, reached by the link tools `tidewhistle_guesthouse` and
+  `marrow_point_harbor_tours`. Called from the Concierge, a business's network runs without
+  its own site's tools. So each town site has a specialist, `house_rules` or `tour_rules`,
+  holding its key rules quoted word for word from its policies page
+  (`tests/town/house_facts.test.mjs` checks every sentence).
 - **`itinerary_checker`**: reads `website_get_itinerary` and reports conflicts, booking
   states and the total. It changes nothing.
 - **Partner rules:** a request on a consent card is under 140 characters and never holds

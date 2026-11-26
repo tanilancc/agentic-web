@@ -41,3 +41,16 @@ Options: a build step per environment; two code copies; pick by hostname.
 Decision: `pickOrigin` in `apps/shared/site-origin.js`. Partner desks accept both caller
 origins.
 Consequences: a locally served town site links to the live sites for peer calls.
+
+## 2026-11-26: Changes from real-model testing
+Context: a full run on a real model (Groq's free tier) passed search, planning, the
+itinerary check, booking in both businesses' windows, and refusing card payment. It also
+found three problems.
+Options: change the model; change the instructions and the runtime.
+Decision:
+- The runtime waits out provider rate limits instead of ending the turn.
+- The Concierge's rules name the link tools, so the model uses them for rule questions.
+- Each town site has a rules specialist quoted from its policies page, so it can answer
+  when another site calls it.
+Consequences: turns on free keys can take longer. The quoted facts must be kept in step
+with the policies pages, which the test enforces.

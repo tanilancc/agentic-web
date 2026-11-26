@@ -38,3 +38,12 @@ Options: the front agent calls the checker; a specialist explains the checker's 
 Decision: `plan_auditor` uses `website_get_mandate` and `website_check_plan`, and may not
 override the checker.
 Consequences: one more model call for a "what if this plan?" question.
+
+## 2026-11-26: Every "would this order work?" question goes to the plan auditor
+Context: in real-model testing, asked whether a one-vendor order would work, the lead agent
+took a quote and judged the plan itself, because a rule sent one-vendor "what if" questions
+to website_request_quote.
+Options: tighten the checker's wording; route all such questions to plan_auditor.
+Decision: any question whether an order or plan works goes to plan_auditor, which runs
+the checker. A quote is for a price only. A test forbids the old wording.
+Consequences: one more model call for these questions. Only the checker judges plans.

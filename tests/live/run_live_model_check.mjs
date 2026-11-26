@@ -58,7 +58,7 @@ export const SCENARIOS = {
   },
   concierge_pets: {
     url: "https://oaw-concierge.pages.dev/",
-    turns: ["Are dogs allowed at the guesthouse?"],
+    turns: ["Are dogs allowed at the guesthouse?", "Can we bring our dog on the Seal Rocks Cruise?"],
   },
   quorum_audit: {
     url: "https://oaw-quorum.pages.dev/",
