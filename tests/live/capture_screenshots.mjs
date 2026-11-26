@@ -14,6 +14,8 @@ const ROUTER = process.env.LIVE_ROUTER || "https://api.groq.com/openai/v1";
 const MODEL = process.env.LIVE_MODEL || "openai/gpt-oss-120b";
 const PAUSE = Number(process.env.LIVE_PAUSE_MS || 65000);
 const OUT = process.argv[2] || "docs/submission/screenshots";
+// LIVE_ONLY=concierge (or beacon, quorum, comma-separated) re-takes just those shots.
+const ONLY = (process.env.LIVE_ONLY || "beacon,concierge,quorum").split(",");
 const CARD = { firstName: "Test", lastName: "Visitor", email: "test.visitor@example.com", phone: "0100 000 000" };
 
 const shot = async (target, name) => {
@@ -113,6 +115,7 @@ async function main() {
   const browser = await chromium.launch(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {});
   try {
     // Beacon: an inspection report and the directory. No model needed.
+    if (ONLY.includes("beacon")) {
     const beacon = await open(browser, "https://oaw-beacon.pages.dev/");
     await beacon.page.fill("#site-url", "https://oaw-concierge.pages.dev/marrow_point_concierge");
     await beacon.page.click('#inspect-form button[type="submit"]');
@@ -120,13 +123,15 @@ async function main() {
     await beacon.page.waitForTimeout(800);
     await shot(beacon.page.locator(".workspace"), "01-beacon-report.png");
     await beacon.context.close();
+    }
 
     // Town Concierge: consent, planning across two businesses, a question to a business's
     // own assistant, and booking in each business's window.
+    if (ONLY.includes("concierge")) {
     const c = await open(browser, "https://oaw-concierge.pages.dev/", true);
     await visit(c.context, c.page, "What rooms are free at the guesthouse for two adults from 10 to 12 December 2026?", { consent: "02-consent-card.png" });
     await c.page.waitForTimeout(PAUSE);
-    await visit(c.context, c.page, "Add the cheapest of those rooms for those dates, arriving in the evening.");
+    await visit(c.context, c.page, "Add the cheapest of those rooms for those dates, arriving between 7 pm and 9 pm.");
     await c.page.waitForTimeout(PAUSE);
     await visit(c.context, c.page, "Add the 10:00 Seal Rocks Cruise on 11 December 2026 for both of us. Does the plan work?");
     await shot(c.page.locator("#board"), "03-trip-board.png");
@@ -137,13 +142,16 @@ async function main() {
     await visit(c.context, c.page, "Book the whole trip.", { review: "06-review-dialog.png", partner: "07-business-window.png" });
     await shot(c.page.locator("#board"), "08-trip-booked.png");
     await c.context.close();
-    await new Promise((resolve) => setTimeout(resolve, PAUSE));
+    }
+    if (ONLY.includes("quorum")) {
+    if (ONLY.length > 1) await new Promise((resolve) => setTimeout(resolve, PAUSE));
 
     // Quorum: the best plan against the best single vendor.
     const q = await open(browser, "https://oaw-quorum.pages.dev/", true);
     await visit(q.context, q.page, "Find the best plan for our team dinner.");
     await shot(q.page.locator(".results"), "09-quorum-best-plan.png");
     await q.context.close();
+    }
   } finally {
     await browser.close();
   }
