@@ -112,3 +112,9 @@ test("any question whether an order or plan would work goes to the plan auditor,
   assert.doesNotMatch(instructions, /For a "what if" about one vendor, call website_request_quote/, "This rule led a real model to judge a plan itself.");
   assert.ok(instructions.length < 5000);
 });
+
+test("money reaches the visitor in dollars, never in cents", async () => {
+  const { network } = await load();
+  const instructions = network.getAgentSpec("procurement_lead").instructions;
+  assert.match(instructions, /Always show money to the visitor in dollars, such as \$131\.99, never in cents\./);
+});
