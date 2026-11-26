@@ -51,6 +51,19 @@ export const SCENARIOS = {
       "Can you pay the vendors for us?",
     ],
   },
+  // Single turns that once went wrong with a real model, to re-check after a fix.
+  beacon_inspect: {
+    url: "https://oaw-beacon.pages.dev/",
+    turns: ["Inspect https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse and tell me what fails."],
+  },
+  concierge_pets: {
+    url: "https://oaw-concierge.pages.dev/",
+    turns: ["Are dogs allowed at the guesthouse?"],
+  },
+  quorum_audit: {
+    url: "https://oaw-quorum.pages.dev/",
+    turns: ["Would a single Harbour Bakehouse order of one gluten-free platter and one classic platter at 17:00 work?"],
+  },
 };
 
 /**
@@ -158,7 +171,7 @@ async function main() {
     console.error("Set LIVE_KEY to a key for the router (Groq by default).");
     process.exit(2);
   }
-  const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(SCENARIOS);
+  const ids = process.argv.slice(2).length ? process.argv.slice(2) : ["beacon", "concierge", "quorum"];
   const { chromium } = require("playwright");
   const proxy = process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {};
   const browser = await chromium.launch(proxy);
