@@ -70,7 +70,7 @@ export class PartnerActions {
     actions.register({
       ...shared,
       name: "reserve_trip",
-      description: "Reserve one departure. Runs in the tour site's own window, where the visitor confirms it. Refused when the total is no longer expectedTotalCents.",
+      description: "Reserve one departure. Runs in the tour site's own window, where the visitor confirms it. Refused when the price has changed since the quote (expectedTotalCents).",
       effect: "irreversible",
       availability: "top-level",
       inputSchema: {

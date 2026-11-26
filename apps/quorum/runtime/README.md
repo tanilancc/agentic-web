@@ -49,6 +49,9 @@ Edited files. Each one has a line near its top saying that it was changed:
   `otk_`.
 - `action-transport.js` opens the confirmation dialog with focus on its heading, so a
   stray Enter cannot confirm an action. Closing the dialog puts focus back where it was.
+  The dialog shows each request as labelled rows, with amounts in cents shown in dollars,
+  instead of raw JSON, and a badge for actions that cannot be undone. Every value is
+  shown as text.
 - `index.js` tells visitors that only actions that cannot be undone ask first, when the
   site offers `website_*` tools.
 - `llm.js` waits out a provider's rate limit. On HTTP 429, or a 503 that says when to come

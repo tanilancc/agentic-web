@@ -68,7 +68,7 @@ export class PartnerActions {
     actions.register({
       ...shared,
       name: "place_booking",
-      description: "Book a room. Runs in the guesthouse's own window, where the visitor confirms it. Refused when the total is no longer expectedTotalCents.",
+      description: "Book a room. Runs in the guesthouse's own window, where the visitor confirms it. Refused when the price has changed since the quote (expectedTotalCents).",
       effect: "irreversible",
       availability: "top-level",
       inputSchema: {

@@ -33,23 +33,100 @@ export async function loadActionModule(registry, scope, manifest, { bridge = fal
   }
 }
 
+// Readable labels for a request's arguments: "roomId" is "Room ID", "expectedTotalCents"
+// is "Expected total" in dollars. Every value is shown as text, never as markup.
+function labelFor(key) {
+  const words = String(key).replace(/Cents$/, "").replace(/_/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim().split(/\s+/);
+  return words.map((word, index) => {
+    const lower = word.toLowerCase();
+    if (["id", "url", "uri"].includes(lower)) return lower.toUpperCase();
+    return index === 0 ? lower.charAt(0).toUpperCase() + lower.slice(1) : lower;
+  }).join(" ");
+}
+
+export function actionTitle(name) {
+  return labelFor(name);
+}
+
+export function reviewRows(args) {
+  if (!args || typeof args !== "object") return [];
+  const rows = [];
+  for (const [key, value] of Object.entries(args)) {
+    if (value === undefined || value === null || value === "") continue;
+    let shown;
+    if (/Cents$/.test(key) && Number.isFinite(value)) shown = `$${(value / 100).toFixed(2)}`;
+    else if (typeof value === "boolean") shown = value ? "Yes" : "No";
+    else if (typeof value === "object") shown = JSON.stringify(value);
+    else shown = String(value);
+    rows.push([labelFor(key), shown]);
+  }
+  return rows;
+}
+
+const REVIEW_CSS = `
+.nsr-dialog{max-width:560px;width:calc(100% - 32px);max-height:85vh;overflow:auto;border:1px solid #c9d3d6;border-radius:14px;padding:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#17262a;background:#fff;box-shadow:0 12px 40px rgba(16,38,44,.25)}
+.nsr-dialog::backdrop{background:rgba(16,30,34,.45)}
+.nsr-head{padding:20px 24px 12px;border-bottom:1px solid #e3e9ea}
+.nsr-head h2{margin:0;font-size:1.15rem;line-height:1.3}
+.nsr-head h2:focus{outline:none}
+.nsr-head p{margin:4px 0 0;color:#566a6d;font-size:.9rem}
+.nsr-item{padding:16px 24px;border-bottom:1px solid #e3e9ea}
+.nsr-title{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 4px;font-weight:650;font-size:1.05rem}
+.nsr-badge{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdecdf;color:#8a3a10;border:1px solid #f1c6a8}
+.nsr-badge.write{background:#e6f1f3;color:#1b5e73;border-color:#bcd8de}
+.nsr-desc{margin:0 0 10px;color:#566a6d;font-size:.9rem}
+.nsr-rows{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;margin:0}
+.nsr-rows dt{color:#566a6d}
+.nsr-rows dd{margin:0;font-weight:550;overflow-wrap:anywhere}
+.nsr-actions{display:flex;gap:10px;justify-content:flex-end;padding:16px 24px}
+.nsr-actions button{font:inherit;font-weight:600;border-radius:8px;padding:9px 18px;cursor:pointer}
+.nsr-yes{background:#1b5e73;color:#fff;border:1px solid #1b5e73}
+.nsr-no{background:#fff;color:#17262a;border:1px solid #c9d3d6}
+.nsr-actions button:focus-visible{outline:3px solid #f0a35c;outline-offset:2px}
+`;
+
 // Used by both the local UI and the trusted, first-party bridge popup.
 export function reviewActions(items, title = "Review actions") {
   return new Promise(resolve => {
-    const dialog = document.createElement("dialog");
-    dialog.style.cssText = "max-width:640px;width:85%;max-height:85vh;overflow:auto;border:1px solid #888;border-radius:12px;padding:24px;font:16px system-ui";
+    if (!document.getElementById("nsr-style")) {
+      const style = document.createElement("style"); style.id = "nsr-style"; style.textContent = REVIEW_CSS;
+      document.head.append(style);
+    }
+    const dialog = document.createElement("dialog"); dialog.className = "nsr-dialog";
+    const head = document.createElement("div"); head.className = "nsr-head";
     const heading = document.createElement("h2"); heading.textContent = title;
     // Start at the top of the dialog, on an element that Enter cannot activate.
     heading.tabIndex = -1; heading.autofocus = true;
-    const details = document.createElement("pre"); details.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere";
-    details.textContent = items.map(i => `${i.action} — ${i.origin} (${i.effect})\n${i.description || ""}\n${JSON.stringify(i.arguments, null, 2)}`).join("\n\n");
-    const yes = document.createElement("button"); yes.textContent = "Confirm actions";
-    const no = document.createElement("button"); no.textContent = "Cancel";
+    const intro = document.createElement("p"); intro.textContent = "Check the details. Nothing happens until you confirm.";
+    head.append(heading, intro);
+    dialog.append(head);
+    for (const item of items) {
+      const section = document.createElement("section"); section.className = "nsr-item";
+      const name = document.createElement("p"); name.className = "nsr-title"; name.textContent = actionTitle(item.action);
+      const badge = document.createElement("span");
+      badge.className = item.effect === "irreversible" ? "nsr-badge" : "nsr-badge write";
+      badge.textContent = item.effect === "irreversible" ? "Cannot be undone" : "Changes something";
+      name.append(badge);
+      const where = document.createElement("p"); where.className = "nsr-desc";
+      where.textContent = [item.description, `Runs on ${item.origin}.`].filter(Boolean).join(" ");
+      const rows = document.createElement("dl"); rows.className = "nsr-rows";
+      for (const [label, value] of reviewRows(item.arguments)) {
+        const dt = document.createElement("dt"); dt.textContent = label;
+        const dd = document.createElement("dd"); dd.textContent = value;
+        rows.append(dt, dd);
+      }
+      section.append(name, where, rows);
+      dialog.append(section);
+    }
+    const actions = document.createElement("div"); actions.className = "nsr-actions";
+    const yes = document.createElement("button"); yes.textContent = "Confirm actions"; yes.className = "nsr-yes";
+    const no = document.createElement("button"); no.textContent = "Cancel"; no.className = "nsr-no";
     // close() returns focus to where the visitor was, such as the chat input.
     const finish = value => { dialog.close(); dialog.remove(); resolve(value); };
     yes.onclick = () => finish(true); no.onclick = () => finish(false);
     dialog.addEventListener("cancel", event => { event.preventDefault(); finish(false); });
-    dialog.append(heading, details, yes, no); document.body.append(dialog); dialog.showModal();
+    actions.append(no, yes);
+    dialog.append(actions); document.body.append(dialog); dialog.showModal();
   });
 }
 

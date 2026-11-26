@@ -129,7 +129,7 @@ export function vendorActions({ catalog, callers, storage = SavedOrders.defaultS
     },
     {
       name: "place_order",
-      description: `Place an order with ${catalog.name}. Runs in ${catalog.name}'s own window, where the visitor confirms it. Refused when the total is no longer expectedTotalCents.`,
+      description: `Place an order with ${catalog.name}. Runs in ${catalog.name}'s own window, where the visitor confirms it. Refused when the price has changed since the quote (expectedTotalCents).`,
       effect: "irreversible",
       availability: "top-level",
       callerOrigins: callers,
