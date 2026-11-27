@@ -1,4 +1,4 @@
-// Checks that Beacon's page does not jump while it loads (cumulative layout shift under
+// Checks that pages which fill in after load (Beacon, the town sites, the vendors) do not jump while they load (cumulative layout shift under
 // 0.1, the "good" limit), on a throttled phone like Lighthouse's mobile run.
 // Run from the repository root: node tests/beacon/chrome/run_layout_check.mjs
 //
@@ -14,7 +14,15 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 const SERVE = path.join(ROOT, "skills/agentify-website/scripts/serve_site.mjs");
-const BEACON = "http://localhost:8090/";
+// Each page that fills in after load, served on its own port as in apps/sites.json.
+const SITES = [
+  { name: "Beacon", dir: "apps/beacon", port: 8090 },
+  { name: "Tidewhistle Guesthouse", dir: "apps/town/guesthouse", port: 8080 },
+  { name: "Harbor Tours", dir: "apps/town/harbor_tours", port: 8081 },
+  { name: "Little Oven", dir: "apps/market/little_oven", port: 8095 },
+  { name: "Green Fork", dir: "apps/market/green_fork", port: 8096 },
+  { name: "Harbour Bakehouse", dir: "apps/market/harbour_bakehouse", port: 8097 },
+];
 const LIMIT = 0.1;
 // Phone sizes and a desktop, each loaded on a slow network with a slow CPU.
 const VIEWPORTS = [
@@ -40,7 +48,7 @@ async function waitFor(url) {
 /**
  * Load the page once and return its layout shifts, with the elements that moved.
  */
-async function measure(browser, viewport) {
+async function measure(browser, viewport, url) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, isMobile: viewport.isMobile });
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -58,7 +66,7 @@ async function measure(browser, viewport) {
       }
     }).observe({ type: "layout-shift", buffered: true });
   });
-  await page.goto(BEACON, { waitUntil: "networkidle" });
+  await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(4000);
   const shifts = await page.evaluate(() => window.__shifts);
   await context.close();
@@ -67,23 +75,25 @@ async function measure(browser, viewport) {
 
 async function main() {
   const { chromium } = require("playwright");
-  const work = mkdtempSync(path.join(tmpdir(), "beacon-layout-"));
-  const server = spawn(process.execPath, [SERVE, path.join(ROOT, "apps/beacon"), "--port", "8090", "--open-as", "localhost", "--log", path.join(work, "beacon.jsonl")], { stdio: "ignore" });
+  const work = mkdtempSync(path.join(tmpdir(), "layout-"));
+  const servers = SITES.map((site) => spawn(process.execPath, [SERVE, path.join(ROOT, site.dir), "--port", String(site.port), "--open-as", "localhost", "--log", path.join(work, `${site.port}.jsonl`)], { stdio: "ignore" }));
   let failed = false;
   try {
-    await waitFor(BEACON);
+    await Promise.all(SITES.map((site) => waitFor(`http://localhost:${site.port}/`)));
     const browser = await chromium.launch();
-    for (const viewport of VIEWPORTS) {
-      const shifts = await measure(browser, viewport);
-      const total = shifts.reduce((sum, s) => sum + s.value, 0);
-      const ok = total < LIMIT;
-      failed ||= !ok;
-      const moved = [...new Set(shifts.flatMap((s) => s.moved))].join(", ");
-      console.log(`${ok ? "PASS" : "FAIL"}  ${viewport.name} ${viewport.width}x${viewport.height}: layout shift ${total.toFixed(3)}${moved ? ` (moved: ${moved})` : ""}`);
+    for (const site of SITES) {
+      for (const viewport of VIEWPORTS) {
+        const shifts = await measure(browser, viewport, `http://localhost:${site.port}/`);
+        const total = shifts.reduce((sum, s) => sum + s.value, 0);
+        const ok = total < LIMIT;
+        failed ||= !ok;
+        const moved = [...new Set(shifts.flatMap((s) => s.moved))].join(", ");
+        console.log(`${ok ? "PASS" : "FAIL"}  ${site.name}, ${viewport.name} ${viewport.width}x${viewport.height}: layout shift ${total.toFixed(3)}${moved ? ` (moved: ${moved})` : ""}`);
+      }
     }
     await browser.close();
   } finally {
-    server.kill();
+    servers.forEach((server) => server.kill());
   }
   process.exit(failed ? 1 : 0);
 }

@@ -181,3 +181,10 @@ body > dialog button { margin-right: 8px; }
 /* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
    page. Override it here; never edit the copied runtime. */
 #agent-app .ns-hint.warn { color: #92400e; }
+
+/* The list is drawn by script after load. Until then, hold about its real height so the
+   booking area below does not jump (tests/beacon/chrome/run_layout_check.mjs). On phones
+   the list is taller than the screen; from 1150px the page has its fixed width. */
+#tour-list:empty { min-height: 100vh; min-height: 100svh; }
+@media (min-width: 700px) { #tour-list:empty { min-height: 880px; } }
+@media (min-width: 1150px) { #tour-list:empty { min-height: 559px; } }
