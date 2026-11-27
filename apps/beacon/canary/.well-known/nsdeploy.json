@@ -1,0 +1,17 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "beacon_canary",
+      "front_man": "canary_desk",
+      "aliases": [
+        "beacon_canary"
+      ],
+      "url": "beacon_canary"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

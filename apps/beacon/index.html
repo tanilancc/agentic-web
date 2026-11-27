@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; frame-src *; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>Beacon: inspect an agentic website</title>
+  <meta name="description" content="Check any open agentic website against the Worldwide Agentic Web spec, red-team its agents, and find agent sites to try.">
+  <!-- site-meta -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Beacon">
+  <meta property="og:title" content="Beacon">
+  <meta property="og:description" content="Check any open agentic website against the Worldwide Agentic Web spec, red-team its agents, and find agent sites to try.">
+  <meta property="og:url" content="https://oaw-beacon.pages.dev/">
+  <meta property="og:image" content="https://oaw-beacon.pages.dev/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Beacon: Inspect, red-team and find open agentic websites.">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /site-meta -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="./">
+      <svg class="wordmark-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+        <path d="M13 12h6l2 16H11z" fill="currentColor"/>
+        <rect x="12" y="6" width="8" height="5" rx="1" fill="var(--beam)"/>
+        <path d="M21 8.5 31 4v9zM11 8.5 1 4v9z" fill="var(--beam)" opacity=".45"/>
+      </svg>
+      <span>Beacon</span>
+    </a>
+    <p class="tagline">Conformance and safety checks for the open agentic web</p>
+  </header>
+
+  <section class="lookup" aria-labelledby="lookup-title">
+    <h1 id="lookup-title">Is this agent site safe to load?</h1>
+    <p class="lookup-lede">Paste the address of an agent network. Beacon reads its public files from your browser and checks them against the Worldwide Agentic Web spec.</p>
+    <form id="inspect-form" class="lookup-form">
+      <label class="visually-hidden" for="site-url">Agent network address</label>
+      <input id="site-url" name="site" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+        placeholder="https://site.example/network_name" required>
+      <button class="button" type="submit">Inspect</button>
+    </form>
+  </section>
+
+  <main class="workspace">
+    <section id="report" class="report" aria-live="polite" aria-label="Inspection report"></section>
+    <aside class="sidebar">
+      <section id="directory" class="directory" aria-label="Directory of agent sites"></section>
+    </aside>
+  </main>
+
+  <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+    <h2 id="assistant-heading">Ask Beacon</h2>
+    <p>Ask for an agent site by what it does, or ask what a site failed and how to fix it. Answers come only from the directory and from Beacon's checks.</p>
+    <p class="assistant-note">Your messages and the reports on this page go to the LLM provider you choose in the settings below. You are asked before Beacon contacts a site the assistant names.</p>
+    <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load. You can still use the page directly.</p>
+    <div id="agent-app">
+      <div data-ns-slot="header"></div>
+      <div class="assistant-panels">
+        <div data-ns-slot="chat"></div>
+        <div data-ns-slot="agents"></div>
+      </div>
+      <div data-ns-slot="settings"></div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <p>Beacon runs entirely in your browser and has no server. Your model key stays in this browser and is sent only to the provider you choose. <a href="shared/privacy.html">Privacy and terms</a></p>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="site.js"></script>
+</body>
+</html>

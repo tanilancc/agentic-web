@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "checkedAt": "2026-11-25T22:51:41.747Z",
+  "sites": {
+    "https://oaw-beacon.pages.dev/beacon": {
+      "level": "conformant",
+      "checkedAt": "2026-11-25T22:51:42.710Z"
+    },
+    "https://oaw-concierge.pages.dev/marrow_point_concierge": {
+      "level": "conformant",
+      "checkedAt": "2026-11-25T22:51:43.742Z"
+    },
+    "https://oaw-quorum.pages.dev/quorum_procurement": {
+      "level": "conformant",
+      "checkedAt": "2026-11-25T22:51:44.839Z"
+    },
+    "https://oaw-tidewhistle.pages.dev/tidewhistle_guesthouse": {
+      "level": "conformant",
+      "checkedAt": "2026-11-25T22:51:45.825Z"
+    },
+    "https://oaw-harbor-tours.pages.dev/marrow_point_harbor_tours": {
+      "level": "conformant",
+      "checkedAt": "2026-11-25T22:51:46.748Z"
+    }
+  }
+}

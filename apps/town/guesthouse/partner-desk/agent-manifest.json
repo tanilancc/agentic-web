@@ -1,0 +1,4 @@
+{
+  "networks": [{ "name": "tidewhistle_partner_desk" }],
+  "actions": { "version": 1, "module": "../partner-actions.js" }
+}

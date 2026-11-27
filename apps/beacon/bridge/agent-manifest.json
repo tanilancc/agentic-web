@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "name": "beacon"
+    }
+  ],
+  "actions": {
+    "version": 1
+  }
+}

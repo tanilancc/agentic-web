@@ -1,0 +1,11 @@
+{
+  "networks": [
+    {
+      "name": "green_fork_partner_desk"
+    }
+  ],
+  "actions": {
+    "version": 1,
+    "module": "../partner-actions.js"
+  }
+}

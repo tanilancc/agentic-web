@@ -1,0 +1,84 @@
+{
+  "brand": "Quorum",
+  "networks": [
+    {
+      "name": "quorum_procurement",
+      "front_man": "procurement_lead",
+      "hocon": "./quorum_procurement.network.json",
+      "description": "Order food for a group from several vendors, within your rules.",
+      "tags": [
+        "agentified-website",
+        "catering",
+        "procurement"
+      ],
+      "sample_queries": [
+        "Find the best plan for our team dinner.",
+        "What if we say 45 people and a $900 budget?",
+        "Could pickup make it cheaper?",
+        "Place the best plan.",
+        "Can you pay the vendors for us?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Vendors are contacted only through their partner desks, after the visitor agrees on a card."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "quorum_procurement",
+    "front_man": "procurement_lead",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#1b5e73"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "quorum_procurement",
+        "front_man": "procurement_lead",
+        "aliases": [
+          "quorum_procurement",
+          "procurement_lead"
+        ],
+        "url": "quorum_procurement"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "get_mandate",
+      "set_mandate",
+      "list_vendors",
+      "request_quote",
+      "find_best_plan",
+      "check_plan",
+      "place_award"
+    ]
+  }
+}

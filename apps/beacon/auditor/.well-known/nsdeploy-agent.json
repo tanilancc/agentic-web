@@ -1,0 +1,7 @@
+{
+  "protocol": "nsdeploy-agent-mcp/v1",
+  "network": "beacon_auditor",
+  "front_man": "auditor",
+  "available": false,
+  "reason": "This is Beacon's auditor, not a service."
+}

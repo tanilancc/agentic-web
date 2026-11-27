@@ -1,0 +1,345 @@
+/* Beacon. One stylesheet, no third-party assets. */
+
+:root {
+  --paper: #f6f3ec;
+  --surface: #fffdf8;
+  --ink: #14212b;
+  --ink-soft: #4a5a66;
+  --line: #d9d2c3;
+  --beam: #e0a12b;
+  --beam-ink: #7a4f00;
+  --sea: #1f5d73;
+  --pass: #1d6b47;
+  --warn: #8a5a00;
+  --fail: #a3271f;
+  --na: #66717a;
+  --pass-bg: #e3f2ea;
+  --warn-bg: #fbefd2;
+  --fail-bg: #fae3e0;
+  --radius: 10px;
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, ui-serif, Georgia, serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light dark;
+}
+
+/* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
+   page. Override it here; never edit the copied runtime. */
+#agent-app .ns-hint.warn { color: #92400e; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0d161d;
+    --surface: #14212b;
+    --ink: #ece7db;
+    --ink-soft: #a5b1ba;
+    --line: #2b3a45;
+    --beam: #f0b84a;
+    --beam-ink: #f0b84a;
+    --sea: #7cc0d6;
+    --pass: #6fd3a2;
+    --warn: #f0c060;
+    --fail: #ff9c92;
+    --na: #94a0a9;
+    --pass-bg: #143326;
+    --warn-bg: #3a2c0c;
+    --fail-bg: #43201c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 var(--body);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+a { color: var(--sea); }
+:focus-visible { outline: 3px solid var(--beam); outline-offset: 2px; }
+
+.masthead, .lookup, .workspace, .assistant, .colophon {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.masthead {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px;
+  padding-block: 18px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.wordmark {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 1.35rem/1 var(--display); letter-spacing: .01em;
+  color: var(--ink); text-decoration: none;
+}
+.wordmark-mark { color: var(--sea); }
+.tagline { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+
+.lookup { padding-block: 36px 28px; }
+.lookup h1 {
+  margin: 0 0 8px;
+  font: 600 clamp(1.7rem, 4.5vw, 2.6rem)/1.12 var(--display);
+  text-wrap: balance;
+}
+.lookup-lede { margin: 0 0 20px; max-width: 62ch; color: var(--ink-soft); }
+.lookup-form { display: flex; flex-wrap: wrap; gap: 8px; max-width: 760px; }
+.lookup-form input {
+  flex: 1 1 260px; min-width: 0;
+  padding: 12px 14px;
+  font: 1rem var(--mono);
+  color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 20px;
+  font: 600 1rem var(--body);
+  color: #1b1403; background: var(--beam);
+  border: 1px solid transparent; border-radius: var(--radius);
+  text-decoration: none; cursor: pointer;
+}
+.button:hover { filter: brightness(1.06); }
+.button[disabled] { opacity: .55; cursor: not-allowed; }
+.button-quiet { background: transparent; color: var(--ink); border-color: var(--line); }
+
+.workspace {
+  display: grid; gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  padding-bottom: 40px;
+  /* The report and directory fill in after the script and index load. Holding a full
+     screen for them keeps the assistant below the fold until then, so nothing on screen
+     jumps when they arrive (tests/beacon/chrome/run_layout_check.mjs). */
+  min-height: 100vh;
+  min-height: 100svh;
+}
+@media (max-width: 860px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+}
+
+.report, .directory {
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px;
+}
+.sidebar { display: grid; gap: 24px; }
+.directory:empty { display: none; }
+
+.report-hint { margin: 0 0 6px; font: 600 1.1rem var(--display); }
+.report-note, .report-pending, .panel-note { margin: 0 0 12px; color: var(--ink-soft); }
+.report-error { margin: 0; color: var(--fail); font-weight: 600; overflow-wrap: anywhere; }
+
+.report-head { display: grid; gap: 2px; margin-bottom: 16px; }
+.report-site { margin: 0; font: 600 1.3rem/1.2 var(--display); overflow-wrap: anywhere; }
+.report-address { margin: 0; font: .85rem var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.level {
+  justify-self: start;
+  margin: 10px 0 4px; padding: 6px 12px;
+  font-weight: 700; border-radius: 999px;
+}
+.level-conformant { color: var(--pass); background: var(--pass-bg); }
+.level-warnings { color: var(--warn); background: var(--warn-bg); }
+.level-not-conformant { color: var(--fail); background: var(--fail-bg); }
+.report-counts, .report-time { margin: 0; font-size: .9rem; color: var(--ink-soft); }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
+.tab {
+  padding: 10px 14px;
+  font: 600 .95rem var(--body); color: var(--ink-soft);
+  background: none; border: 0; border-bottom: 3px solid transparent; cursor: pointer;
+  white-space: nowrap;
+}
+.tab-selected { color: var(--ink); border-bottom-color: var(--beam); }
+
+.check-group + .check-group { margin-top: 20px; }
+.check-group-title {
+  margin: 0 0 8px;
+  font: 700 .78rem var(--body); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.check-list { display: grid; gap: 6px; }
+.check { border: 1px solid var(--line); border-radius: 8px; }
+.check-summary {
+  display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 10px 12px; cursor: pointer; list-style: none;
+}
+.check-summary::-webkit-details-marker { display: none; }
+@media (max-width: 520px) {
+  .check-summary { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+.check-status {
+  justify-self: start; padding: 2px 8px;
+  font-size: .78rem; font-weight: 700; border-radius: 999px;
+}
+.status-pass { color: var(--pass); background: var(--pass-bg); }
+.status-warn { color: var(--warn); background: var(--warn-bg); }
+.status-fail { color: var(--fail); background: var(--fail-bg); }
+.status-na { color: var(--na); border: 1px solid var(--line); }
+.check-title { font-weight: 600; overflow-wrap: anywhere; }
+.check-spec { font: .78rem var(--mono); color: var(--ink-soft); }
+.check-body { padding: 0 12px 12px; border-top: 1px dashed var(--line); }
+.check-body p { margin: 10px 0 0; overflow-wrap: anywhere; }
+.check-fix { color: var(--beam-ink); }
+.check-id { font: .78rem var(--mono); color: var(--ink-soft); }
+
+.ask {
+  width: min(92vw, 460px);
+  color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px;
+}
+.ask::backdrop { background: rgb(8 14 19 / .55); }
+.ask-title { margin: 0 0 8px; font: 600 1.25rem var(--display); }
+.ask-message { margin: 0 0 18px; overflow-wrap: anywhere; }
+.ask-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+.colophon { padding-block: 0 32px; color: var(--ink-soft); font-size: .88rem; }
+
+.side-title { margin: 0 0 10px; font: 600 1.1rem var(--display); }
+.side-note { margin: 0; color: var(--ink-soft); font-size: .92rem; }
+.side-search {
+  width: 100%; padding: 9px 12px; margin-bottom: 12px;
+  font: .95rem var(--body); color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.site-list { display: grid; gap: 12px; }
+.site { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.site:last-child { padding-bottom: 0; border-bottom: 0; }
+.site-pick {
+  display: grid; gap: 1px; width: 100%; padding: 0;
+  text-align: left; color: var(--ink); background: none; border: 0; cursor: pointer;
+}
+.site-name { font-weight: 700; color: var(--sea); text-decoration: underline; overflow-wrap: anywhere; }
+.site-host { font: .78rem var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.site-description { margin: 6px 0; font-size: .92rem; overflow-wrap: anywhere; }
+.site-level { display: inline-block; margin: 0; padding: 1px 8px; font-size: .76rem; font-weight: 700; border-radius: 999px; }
+.level-unknown { color: var(--na); border: 1px solid var(--line); }
+
+/* The chat keeps a light surface in both colour schemes: the runtime's own widgets
+   assume one. */
+.assistant { padding-bottom: 48px; }
+.assistant h2 { margin: 0 0 6px; font: 600 1.5rem var(--display); }
+.assistant > p { margin: 0 0 8px; max-width: 70ch; }
+.assistant-note, #assistant-status { color: var(--ink-soft); font-size: .92rem; }
+#agent-app { color: #14212b; }
+
+/* Assistant layout, from the agentify-website skill's template, in Beacon's palette. */
+
+/* The runtime reads these variables for its chat, settings and agent panels.
+   The chat background below also uses --ns-bg. White text sits on --ns-primary (the
+   visitor's messages, Send, and the chat form and settings buttons) and on --ns-accent
+   (Send while a turn is steered), so give both at least 4.5:1 contrast with white.
+   --ns-accent also underlines the chat header. */
+#agent-app {
+  --ns-font: system-ui, sans-serif;
+  --ns-bg: #fffdf8;
+  --ns-fg: #14212b;
+  --ns-primary: #1f5d73;
+  --ns-accent: #7a4f00;
+  --ns-border: #d9d2c3;
+  --ns-panelbg: #ffffff;
+  --ns-msgbg: #f1ece0;
+  --ns-muted: #4a5a66;
+}
+
+.assistant-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* Set the height once the runtime has mounted the chat, so a failed load leaves no
+   empty box. */
+#agent-app.ns-composed-app [data-ns-slot="chat"] { height: 720px; }
+/* The runtime gives the chat no background of its own. Keep --ns-msgbg different from
+   --ns-bg, or bot replies lose their bubble. */
+#agent-app .ns-chat { background: var(--ns-bg); }
+
+/* Site-wide form rules often stretch the runtime's own controls. Undo them here. */
+#agent-app input[type="checkbox"],
+#agent-app input[type="radio"] { width: auto; }
+#agent-app .ns-header { flex-wrap: wrap; }
+/* Site label rules add margins and bold text, and the inputs inside the labels inherit
+   the weight. */
+#agent-app .ns-settings-body label { margin: 4px 0; font-weight: 400; }
+/* Chat forms label radio groups with a legend, so site legend fonts would reach them. */
+#agent-app .ns-w-label { font-family: inherit; }
+/* Site label rules add margins to chat form fields and make their options bold. */
+#agent-app .ns-widget label { margin: 0; }
+#agent-app .ns-w-radio label,
+#agent-app .ns-w-multi label,
+#agent-app .ns-w-toggle { font-weight: 400; }
+/* The runtime sizes radio and multi-choice options but not the checkbox label. */
+#agent-app .ns-w-toggle { font-size: 13px; }
+/* The runtime spaces its buttons with gap. A site's button margin pushes Send below the input. */
+#agent-app button { margin: 0; }
+/* Chat choices are buttons with a light background. A site's button color can hide their
+   titles. */
+#agent-app .ns-w-choice { color: var(--ns-fg); }
+/* A site's button:hover background also reaches the runtime's plain buttons, behind
+   their dark text. Keep the runtime's own backgrounds. */
+#agent-app .ns-devtoggle:not(.on):hover,
+#agent-app .ns-modal-close:hover { background: transparent; }
+#agent-app .ns-w-choice:disabled:hover { background: #fafbfc; }
+/* The runtime's message rule hides the partner consent card's own background, and its
+   Decline label then has too little contrast. */
+#agent-app .ns-consent { background: #fffbeb; }
+/* While a consent card waits, the status line above it already says "Contacting", though
+   nothing has been sent. Hide it until the visitor answers. */
+#agent-app .ns-msgs:has(.ns-consent-actions) > .ns-turn-status { display: none; }
+/* Long links in a reply would run out of the bubble on a phone. "anywhere" would also
+   let the consent card's buttons shrink and split their labels. */
+#agent-app .ns-msg { overflow-wrap: break-word; }
+/* On a phone the consent card is too narrow for its three buttons in one row, and
+   "Always allow" breaks onto two lines. Keep each label whole and wrap the row. */
+#agent-app .ns-consent-actions { flex-wrap: wrap; }
+#agent-app .ns-consent-actions button { white-space: nowrap; }
+
+/* site.js and the runtime add their confirmation dialogs to <body>, outside #agent-app.
+   Site h2 rules reach the heading, and the two buttons touch. A right margin keeps
+   wrapped buttons lined up on the left. */
+body > dialog h2 { margin: 0 0 12px; font: 700 1.25em system-ui, sans-serif; }
+body > dialog button { margin-right: 8px; }
+/* site.js's dialog: the details in two columns, and a plain decline button, so the two
+   choices do not look the same. */
+.assistant-review { max-width: 640px; width: 85%; max-height: 85vh; overflow: auto; border: 1px solid #888; border-radius: 12px; padding: 24px; font: 16px system-ui, sans-serif; }
+.assistant-review dl { display: grid; grid-template-columns: fit-content(40%) 1fr; gap: 4px 16px; margin: 12px 0; }
+.assistant-review dt { font-weight: 600; }
+.assistant-review dd { margin: 0; overflow-wrap: anywhere; }
+.assistant-review details { margin: 12px 0; }
+.assistant-review pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-review .assistant-decline { background: transparent; color: inherit; border: 1px solid currentColor; }
+
+@media (max-width: 760px) {
+  .assistant-panels { grid-template-columns: 1fr; }
+  /* On a phone, each detail goes under its label, so an email is not split. */
+  .assistant-review dl { grid-template-columns: 1fr; gap: 0; }
+  .assistant-review dd { margin-bottom: 8px; }
+}
+
+.try { padding-top: 28px; }
+.try h1 { margin: 0 0 8px; font: 600 clamp(1.5rem, 4vw, 2.1rem)/1.15 var(--display); }
+#try-status { overflow-wrap: anywhere; }
+
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 16px; margin: 0 0 16px; }
+.facts dt { font-weight: 600; color: var(--ink-soft); }
+.facts dd { margin: 0; overflow-wrap: anywhere; font-family: var(--mono); font-size: .9rem; }
+.ask-buttons.start { justify-content: flex-start; }
+.redteam-banner {
+  margin: 0 0 14px; padding: 10px 12px;
+  border-left: 4px solid var(--beam); background: var(--warn-bg); color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  #agent-app .ns-hint.warn { color: #fbbf24; }
+}

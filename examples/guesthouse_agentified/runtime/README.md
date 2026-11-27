@@ -49,8 +49,21 @@ Edited files. Each one has a line near its top saying that it was changed:
   `otk_`.
 - `action-transport.js` opens the confirmation dialog with focus on its heading, so a
   stray Enter cannot confirm an action. Closing the dialog puts focus back where it was.
+  The dialog shows each request as labelled rows, with amounts in cents shown in dollars,
+  instead of raw JSON, and a badge for actions that cannot be undone. Every value is
+  shown as text.
 - `index.js` tells visitors that only actions that cannot be undone ask first, when the
   site offers `website_*` tools.
+- `llm.js` waits out a provider's rate limit. On HTTP 429, or a 503 that says when to come
+  back, it waits the time the provider asks for, up to 60 seconds, and sends the same
+  request again, up to twice. The visitor's Stop ends a wait at once. Otherwise the visitor
+  gets a plain sentence instead of the provider's JSON, which can hold account details.
+  The new file `rate-limit.js` holds this logic. Free keys need it: Groq's free tier allows
+  8,000 tokens a minute, which one turn with a delegating agent can exceed.
+- `cruse-render.js` shows `<br>` in a Markdown reply, such as inside a table cell, as a line
+  break. Models often write it. Every other HTML tag is still shown as plain text.
+- `execution-stream.js` and `turn-status.js` show "Waiting N s for your AI provider's rate
+  limit…" in the chat while `llm.js` waits.
 
 Protocol name: `nsdeploy`. Use it for `<protocol_name>` in `agent-manifest.json`. It
 names the discovery files, such as `.well-known/nsdeploy.json`, that nsdeploy's tools read.

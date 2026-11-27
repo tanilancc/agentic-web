@@ -1,0 +1,6 @@
+# Cloudflare Pages (and Netlify) headers. partner-desk/ stays framable on purpose:
+# Quorum loads it in a frame. The menu page itself refuses framing.
+/
+  Content-Security-Policy: frame-ancestors 'none'
+/index.html
+  Content-Security-Policy: frame-ancestors 'none'

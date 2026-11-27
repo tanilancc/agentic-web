@@ -1,0 +1,37 @@
+# Re-checks every site in Beacon's directory once a day, and commits the levels and
+# badges. A site that stops conforming is marked, not removed.
+name: Beacon daily re-check
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beacon-recheck
+  cancel-in-progress: false
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Re-check the directory
+        run: node tools/beacon_recheck.mjs --write
+      - name: Commit changed levels and badges
+        run: |
+          git add apps/beacon/index/status.json apps/beacon/badges
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Beacon: daily directory re-check"
+          git push

@@ -1,0 +1,7 @@
+{
+  "protocol": "nsdeploy-agent-mcp/v1",
+  "network": "beacon_canary",
+  "front_man": "canary_desk",
+  "available": false,
+  "reason": "This is a test caller, not a service."
+}

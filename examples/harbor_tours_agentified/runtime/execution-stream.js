@@ -1,4 +1,5 @@
 // execution-stream.js — public, per-turn async execution stream.
+// Changed by agentic-web. See README.md in this folder for what changed.
 //
 // TraceBus remains the complete developer/audit record. This adapter projects one
 // run's trace subtree into a small, stable set of UI-safe lifecycle events while
@@ -135,6 +136,13 @@ export function createTurnEventStream(trace, runTurn, streamToken) {
       queue.push(base("tool.started", ev, {
         source,
         tool: { name: ev.tool, callId: ev.callId, kind: ev.toolKind },
+        visibility: "user",
+      }));
+    } else if (ev.phase === "note" && ev.kind === "rate_limit_wait") {
+      queue.push(base("provider.waiting", ev, {
+        source,
+        waitMs: ev.waitMs,
+        attempt: ev.attempt,
         visibility: "user",
       }));
     } else if (ev.phase === "note" && ev.kind === "tool_progress") {

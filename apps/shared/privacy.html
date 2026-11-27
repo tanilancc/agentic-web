@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Privacy and terms</title>
+  <!--
+    One copy of this page is shared by every site in apps/sites.json.
+    Edit apps/shared/privacy.html, then run `node tools/sync_runtime.mjs` to copy it into each
+    site's shared/ folder, and redeploy. Do not edit the copies.
+  -->
+  <style>
+    :root { --bg: #f5f7f7; --fg: #172426; --muted: #566a6d; --line: #d5dfe0; --accent: #0f6b74; color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0f191b; --fg: #e3ecec; --muted: #9db0b2; --line: #27393c; --accent: #5cc3cc; } }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 46rem; margin: 0 auto; padding: 32px max(16px, env(safe-area-inset-left, 0px)) 64px; }
+    h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 4px; }
+    h2 { font-size: 1.15rem; margin: 32px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+    p, li { margin: 0 0 10px; }
+    ul { padding-left: 1.2em; }
+    a { color: var(--accent); }
+    .meta { color: var(--muted); font-size: .92rem; }
+    .demo { border-left: 3px solid var(--accent); padding: 10px 14px; background: color-mix(in srgb, var(--accent) 10%, transparent); border-radius: 0 8px 8px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="meta"><a href="../">← Back to the site</a></p>
+  <h1>Privacy and terms</h1>
+  <p class="meta">Applies to Beacon, Town Concierge, Quorum, and the Marrow Point demo sites. Last updated 18 November 2026.</p>
+
+  <p class="demo"><strong>This is a demonstration.</strong> Marrow Point, its guesthouse, harbor tours and food vendors are fictional. Nothing you book or order here happens in the real world, and nothing is charged. Please use made-up names and contact details.</p>
+
+  <h2>Who runs these sites</h2>
+  <!-- OPERATOR DETAILS: add who runs the sites here when you are ready, for example
+       "These sites are run by <name or team>." -->
+  <p>These sites were built as an entry to The Open Agentic Web Challenge. They are static web pages with no server of their own.</p>
+
+  <h2>What we collect</h2>
+  <p>Nothing on a server. The sites have no backend, no accounts, no analytics and no tracking cookies. What you enter stays in your own browser:</p>
+  <ul>
+    <li><strong>Your AI key and model settings</strong>, in this browser's storage, so the assistant can work.</li>
+    <li><strong>Your contact card</strong> (name, email, phone), in this browser's storage. The assistant never sees it. It is shown only in a business's own booking window, on your screen, before you confirm.</li>
+    <li><strong>Your plans, bookings and orders</strong>, in each site's storage in this browser.</li>
+  </ul>
+  <p>This storage is used only for features you ask for, so the sites need no cookie banner. To delete it, clear the key in the assistant's settings, or clear this site's data in your browser's settings. A private window starts empty and forgets everything when closed.</p>
+
+  <h2>Your AI provider</h2>
+  <p>The assistant runs in your browser on the AI provider you choose in <strong>AI model settings</strong>, with your own key. That provider processes, under its own privacy policy and terms:</p>
+  <ul>
+    <li>your messages;</li>
+    <li>the assistant's instructions, which are public on each site;</li>
+    <li>what the site's tools return to the assistant, such as availability, prices, your plan and booking references. Never your contact card.</li>
+  </ul>
+  <p>The providers offered are:</p>
+  <ul>
+    <li data-provider="Otari"><strong>Otari, the default</strong> if you choose none: <a href="https://otari.ai" rel="noreferrer">otari.ai</a></li>
+    <li data-provider="Google AI Studio">Google AI Studio: <a href="https://policies.google.com/privacy" rel="noreferrer">Google privacy policy</a></li>
+    <li data-provider="Groq">Groq: <a href="https://groq.com/privacy-policy/" rel="noreferrer">Groq privacy policy</a></li>
+    <li data-provider="OpenAI">OpenAI: <a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI privacy policy</a></li>
+    <li data-provider="Anthropic">Anthropic: <a href="https://www.anthropic.com/legal/privacy" rel="noreferrer">Anthropic privacy policy</a></li>
+  </ul>
+  <p>You can also enter another provider's address in the settings. Your messages then go to that provider instead, under its terms. Usage costs on your key are yours. Your key is sent only to the provider you chose, never to these sites or to any partner site.</p>
+
+  <h2>Talking to other sites</h2>
+  <p>An assistant contacts another site only after you choose <strong>Allow</strong> on a card that shows the site and the exact message. That site receives only that message. It never receives your key, your conversation or your contact card. Bookings and orders with another business are confirmed by you in that business's own window.</p>
+
+  <h2>Hosting</h2>
+  <p>The sites are hosted on Cloudflare. Like any web host, Cloudflare may process technical data such as IP addresses to deliver and protect the pages, under its own privacy policy. We do not use that data to identify you.</p>
+
+  <h2>Using the sites</h2>
+  <ul>
+    <li><strong>AI can be wrong.</strong> Check anything important. The assistants answer only from the sites' own data, but mistakes are possible.</li>
+    <li><strong>Beacon:</strong> inspect or red-team only sites you are allowed to test. Beacon reads public files only, and a red-team run uses your key.</li>
+    <li>Do not use the sites for anything unlawful, or to attack or overload other sites or providers.</li>
+  </ul>
+
+  <h2>No warranty</h2>
+  <p>The sites are provided "as is", for demonstration, without warranty of any kind. To the extent the law allows, the authors are not liable for any loss arising from their use, including costs on your AI key.</p>
+
+  <h2>Changes and contact</h2>
+  <!-- CONTACT DETAILS: add how to reach you here when you are ready, for example an email
+       address or a link to your project's issue tracker. -->
+  <p>This page may be updated; the date at the top shows the latest version.</p>
+</main>
+</body>
+</html>

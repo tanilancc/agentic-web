@@ -1,0 +1,142 @@
+/* Town Concierge. One stylesheet, no third-party assets. */
+
+:root {
+  --paper: #f3f0e8;
+  --surface: #fffdf7;
+  --ink: #1d2a2f;
+  --ink-soft: #52616a;
+  --line: #d8d0bf;
+  --sea: #1b5e73;
+  --kelp: #2f6b4f;
+  --buoy: #c4452c;
+  --sand: #f6e7c4;
+  --radius: 10px;
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, ui-serif, Georgia, serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+/* The runtime colours its settings warning #b45309, under WCAG AA's 4.5:1 on this
+   page. Override it here; never edit the copied runtime. */
+#agent-app .ns-hint.warn { color: #92400e; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0f1a1f;
+    --surface: #17252c;
+    --ink: #ece6d8;
+    --ink-soft: #a7b3ba;
+    --line: #2c3c45;
+    --sea: #7fc3d8;
+    --kelp: #7fd1a7;
+    --buoy: #ff9a85;
+    --sand: #3b3220;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--body); }
+:focus-visible { outline: 3px solid var(--sea); outline-offset: 2px; }
+
+.masthead, .page { max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+.masthead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding-block: 18px 10px; border-bottom: 1px solid var(--line); }
+.wordmark { margin: 0; font: 600 1.35rem/1 var(--display); color: var(--sea); }
+.tagline { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+
+.intro { padding-block: 32px 20px; }
+.intro h1 { margin: 0 0 8px; font: 600 clamp(1.7rem, 4.5vw, 2.5rem)/1.12 var(--display); text-wrap: balance; }
+.intro p { margin: 0; max-width: 66ch; color: var(--ink-soft); }
+
+.columns { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+@media (max-width: 860px) { .columns { grid-template-columns: minmax(0, 1fr); } }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.panel h2, .assistant h2 { margin: 0 0 8px; font: 600 1.25rem var(--display); }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.note { margin: 0 0 12px; color: var(--ink-soft); font-size: .9rem; }
+
+button.quiet { padding: 6px 12px; font: 600 .85rem var(--body); color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+
+.board-empty { margin: 0; color: var(--ink-soft); }
+.legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.leg {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-left: 4px solid var(--sea); border-radius: 8px;
+}
+.leg-flagged { border-left-color: var(--buoy); }
+.leg-when { grid-column: 1 / -1; font-size: .82rem; color: var(--ink-soft); }
+.leg-title { font-weight: 700; overflow-wrap: anywhere; }
+.leg-price { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.leg-partner { font-size: .88rem; color: var(--ink-soft); overflow-wrap: anywhere; }
+.leg-status { justify-self: end; font-size: .8rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.status-booked { color: var(--kelp); border-color: currentColor; }
+.status-refused, .status-unknown { color: var(--buoy); border-color: currentColor; }
+.leg-code, .leg-reason { grid-column: 1 / -1; font-size: .88rem; overflow-wrap: anywhere; }
+.leg-reason { color: var(--buoy); }
+.board-total { margin: 12px 0 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.conflicts { margin: 12px 0 0; padding: 10px 12px 10px 28px; background: var(--sand); border-radius: 8px; }
+.conflict { overflow-wrap: anywhere; }
+
+.card-form { display: grid; gap: 10px; }
+.card-form label { display: grid; gap: 4px; font-size: .9rem; font-weight: 600; }
+.card-form input { padding: 9px 11px; font: 1rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; }
+
+.assistant { padding-block: 32px 48px; }
+#assistant-status { color: var(--ink-soft); font-size: .92rem; }
+
+/* Assistant layout, from the agentify-website skill's template, in this site's palette.
+   The chat keeps a light surface in both colour schemes: the runtime's widgets assume one. */
+#agent-app {
+  color: #1d2a2f;
+  --ns-font: system-ui, sans-serif;
+  --ns-bg: #fffdf7;
+  --ns-fg: #1d2a2f;
+  --ns-primary: #1b5e73;
+  --ns-accent: #2f6b4f;
+  --ns-border: #d8d0bf;
+  --ns-panelbg: #fffdf7;
+  --ns-msgbg: #efe9dc;
+  --ns-muted: #52616a;
+}
+.assistant-panels { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; margin-top: 16px; }
+#agent-app.ns-composed-app [data-ns-slot="chat"] { height: 640px; }
+#agent-app .ns-chat { background: var(--ns-bg); }
+#agent-app input[type="checkbox"], #agent-app input[type="radio"] { width: auto; }
+#agent-app .ns-header { flex-wrap: wrap; }
+#agent-app button { margin: 0; }
+#agent-app .ns-w-choice { color: var(--ns-fg); }
+#agent-app .ns-consent { background: #fffbeb; }
+#agent-app .ns-msgs:has(.ns-consent-actions) > .ns-turn-status { display: none; }
+#agent-app .ns-msg { overflow-wrap: break-word; }
+#agent-app .ns-consent-actions { flex-wrap: wrap; }
+#agent-app .ns-consent-actions button { white-space: nowrap; }
+@media (max-width: 760px) {
+  .assistant-panels { grid-template-columns: 1fr; }
+  .assistant-review dl { grid-template-columns: 1fr; gap: 0; }
+  .assistant-review dd { margin-bottom: 8px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  #agent-app .ns-hint.warn { color: #fbbf24; }
+}
+
+/* The site's own confirmation dialog ("Book this trip?", "Place these orders?"), styled
+   like each business's confirmation window. Its elements are added by site.js. */
+body > dialog.assistant-review { color: #17262a; background: #fff; }
+.assistant-review { max-width: 600px; width: calc(100% - 32px); max-height: 85vh; overflow: auto; border: 1px solid #c9d3d6; border-radius: 14px; padding: 22px 24px 20px; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; box-shadow: 0 12px 40px rgba(16, 38, 44, .25); }
+.assistant-review::backdrop { background: rgba(16, 30, 34, .45); }
+.assistant-review[open] { display: grid; grid-template-columns: 1fr auto auto; column-gap: 10px; }
+.assistant-review > :not(button) { grid-column: 1 / -1; }
+.assistant-review h2 { margin: 0 0 6px; font: 700 1.2rem/1.3 system-ui, sans-serif; }
+.assistant-review h2:focus { outline: none; }
+.assistant-review > p { margin: 0 0 14px; color: #566a6d; }
+.assistant-review dl { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr); gap: 8px 16px; margin: 0; padding: 14px 0; border-top: 1px solid #e3e9ea; border-bottom: 1px solid #e3e9ea; }
+.assistant-review dt { color: #566a6d; }
+.assistant-review dd { margin: 0; font-weight: 550; overflow-wrap: anywhere; }
+.assistant-review details { margin: 12px 0 0; color: #566a6d; font-size: .9rem; }
+.assistant-review summary { cursor: pointer; }
+.assistant-review pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; }
+.assistant-review > button { margin: 18px 0 0; font: inherit; font-weight: 600; border-radius: 8px; padding: 9px 18px; cursor: pointer; }
+.assistant-review > button:not(.assistant-decline) { order: 2; grid-column: 3; background: #1b5e73; color: #ffffff; border: 1px solid #1b5e73; }
+.assistant-review > .assistant-decline { order: 1; grid-column: 2; background: #ffffff; color: #17262a; border: 1px solid #c9d3d6; }
+.assistant-review > button:focus-visible { outline: 3px solid #f0a35c; outline-offset: 2px; }

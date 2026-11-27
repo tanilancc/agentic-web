@@ -1,0 +1,79 @@
+{
+  "brand": "Beacon",
+  "networks": [
+    {
+      "name": "beacon",
+      "front_man": "beacon_guide",
+      "hocon": "./beacon.network.json",
+      "description": "Find agent sites in the directory, or ask what a site failed and how to fix it.",
+      "tags": [
+        "agentified-website",
+        "directory",
+        "conformance"
+      ],
+      "sample_queries": [
+        "Find me an agent site that can book a boat trip.",
+        "Inspect https://site.example/network_name and tell me what fails.",
+        "What should that site fix first?",
+        "Which of these sites is the most trustworthy?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Local agent and page-local actions only. Sites are inspected by the page, after the visitor agrees."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "beacon",
+    "front_man": "beacon_guide",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#1f5d73"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "beacon",
+        "front_man": "beacon_guide",
+        "aliases": [
+          "beacon",
+          "beacon_guide"
+        ],
+        "url": "beacon"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "search_directory",
+      "get_site_report",
+      "inspect_site"
+    ]
+  }
+}
