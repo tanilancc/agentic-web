@@ -55,7 +55,7 @@ Edited files. Each one has a line near its top saying that it was changed:
 - `index.js` tells visitors that only actions that cannot be undone ask first, when the
   site offers `website_*` tools.
 - `llm.js` waits out a provider's rate limit. On HTTP 429, or a 503 that says when to come
-  back, it waits the time the provider asks for, up to 30 seconds, and sends the same
+  back, it waits the time the provider asks for, up to 60 seconds, and sends the same
   request again, up to twice. The visitor's Stop ends a wait at once. Otherwise the visitor
   gets a plain sentence instead of the provider's JSON, which can hold account details.
   The new file `rate-limit.js` holds this logic. Free keys need it: Groq's free tier allows

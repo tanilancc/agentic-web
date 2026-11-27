@@ -12,7 +12,7 @@ export class RateLimit {
   static MAX_RETRIES = 2;
 
   /** The longest wait worth holding a visitor's turn for. */
-  static MAX_WAIT_MS = 30000;
+  static MAX_WAIT_MS = 60000;
 
   /** The wait for a 429 that does not say how long. */
   static DEFAULT_WAIT_MS = 3000;

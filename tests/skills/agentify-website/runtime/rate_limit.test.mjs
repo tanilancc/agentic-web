@@ -101,3 +101,11 @@ test("the visitor's Stop during a wait ends the call at once", async () => {
 test("the turn status says the assistant is waiting for the provider", () => {
   assert.match(statusTextForEvent({ type: "provider.waiting", waitMs: 8258 }), /Waiting 9 s for your AI provider's rate limit/);
 });
+
+test("a 35-second wait, as Groq's free tier often asks, is waited out instead of ending the turn", async () => {
+  assert.equal(RateLimit.MAX_WAIT_MS, 60000);
+  const { result, waits, calls } = await chatWith([limited("Please try again in 35.2s."), sse("Done")]);
+  assert.equal(result.content, "Done");
+  assert.deepEqual(waits, [35200]);
+  assert.equal(calls.length, 2);
+});
